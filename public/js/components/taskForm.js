@@ -8,6 +8,7 @@ import { addTask, getState, setView, updateTask } from '../state/store.js';
 import { todayISO } from '../lib/date.js';
 import { describeNextLesson, nextLessonFor } from '../data/schedule.js';
 import { attachmentField } from './attachments.js';
+import { subjectPicker } from './subjectPicker.js';
 
 /**
  * @param {{task?: object, preset?: object, detected?: string[]}} [options]
@@ -60,22 +61,15 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     autocomplete: 'off',
   });
 
-  fields.subject = el('input', {
-    class: 'input',
+  // Echtes Auswahlmenü statt <datalist>: Das funktioniert auf allen Geräten,
+  // besonders auf iPad und iPhone, wo datalist keine Liste anzeigt.
+  const subject = subjectPicker({
     id: 'field-subject',
-    type: 'text',
-    name: 'subject',
-    list: 'subject-options',
+    subjects,
     value: initial.subject ?? '',
-    placeholder: 'z.B. Mathematik',
-    autocomplete: 'off',
+    onChange: () => handleSubjectChange(),
   });
-
-  const subjectOptions = el(
-    'datalist',
-    { id: 'subject-options' },
-    subjects.map((subject) => el('option', { value: subject.name })),
-  );
+  fields.subject = subject.control;
 
   fields.description = el('textarea', {
     class: 'textarea',
@@ -133,7 +127,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     checked: Boolean(initial.aiRequested),
   });
 
-  const attachments = attachmentField({ initial: initial.attachments ?? [] });
+  const attachments = attachmentField({ id: 'field-attachments', initial: initial.attachments ?? [] });
 
   /* --- Abgabetermin aus dem Stundenplan --- */
 
@@ -148,7 +142,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
   };
 
   const refreshLessonHint = () => {
-    const subjectName = fields.subject.value.trim();
+    const subjectName = subject.getValue();
     const next = subjectName ? nextLessonFor(state.schedule, subjectName) : null;
 
     if (!next) {
@@ -174,13 +168,13 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
   };
 
   // Fachwechsel zieht den Termin nach, solange er nicht von Hand gesetzt wurde.
-  fields.subject.addEventListener('input', () => {
+  function handleSubjectChange() {
     if (state.settings.autoDueFromSchedule && !dueTouched) {
-      const next = nextLessonFor(state.schedule, fields.subject.value.trim());
+      const next = nextLessonFor(state.schedule, subject.getValue());
       if (next) applyNextLesson(next);
     }
     refreshLessonHint();
-  });
+  }
 
   for (const field of [fields.dueDate, fields.dueTime]) {
     field.addEventListener('input', () => {
@@ -193,7 +187,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
   const form = el('form', { class: 'dialog-form', id: 'task-form', novalidate: true }, [
     el('div', { class: 'form-grid' }, [
       makeField('title', 'Titel *', fields.title, { span: true }),
-      makeField('subject', 'Fach *', fields.subject, { hint: 'Neue Fächer werden automatisch angelegt.' }),
+      makeField('subject', 'Fach *', subject.element, { hint: 'Neue Fächer werden automatisch angelegt.' }),
       makeField('priority', 'Priorität', fields.priority),
       makeField('dueDate', 'Abgabetermin', fields.dueDate, { hint: lessonHint }),
       makeField('dueTime', 'Uhrzeit (optional)', fields.dueTime),
@@ -210,7 +204,6 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
       makeField('description', 'Beschreibung', fields.description, { span: true }),
       attachments.element,
     ]),
-    subjectOptions,
   ]);
 
   const detectedHint = detected.length
@@ -226,7 +219,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
   const submit = () => {
     const input = {
       title: fields.title.value,
-      subject: fields.subject.value,
+      subject: subject.getValue(),
       description: fields.description.value,
       dueDate: fields.dueDate.value,
       dueTime: fields.dueTime.value,
@@ -294,7 +287,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
 
   // Ist das Fach schon bekannt (z.B. aus der Schnelleingabe), gleich terminieren.
   if (!isEdit && state.settings.autoDueFromSchedule && !dueTouched) {
-    const next = nextLessonFor(state.schedule, fields.subject.value.trim());
+    const next = nextLessonFor(state.schedule, subject.getValue());
     if (next) applyNextLesson(next);
   }
   refreshLessonHint();

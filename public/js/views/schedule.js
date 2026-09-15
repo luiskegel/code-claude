@@ -31,6 +31,7 @@ import { describeDueDate } from '../lib/date.js';
 import { showToast } from '../components/toast.js';
 import { emptyState } from '../components/emptyState.js';
 import { openTaskDialog } from '../components/taskForm.js';
+import { subjectPicker } from '../components/subjectPicker.js';
 
 export function scheduleView() {
   const state = getState();
@@ -406,15 +407,12 @@ function openLessonDialog(lesson = null) {
     ]);
   };
 
-  fields.subject = el('input', {
-    class: 'input',
+  const subject = subjectPicker({
     id: 'lesson-subject',
-    type: 'text',
-    list: 'lesson-subject-options',
+    subjects: state.subjects,
     value: initial.subject,
-    placeholder: 'z.B. Mathematik',
-    autocomplete: 'off',
   });
+  fields.subject = subject.control;
 
   fields.day = el(
     'select',
@@ -456,7 +454,7 @@ function openLessonDialog(lesson = null) {
 
   const form = el('form', { class: 'dialog-form', id: 'lesson-form', novalidate: true }, [
     el('div', { class: 'form-grid' }, [
-      makeField('subject', 'Fach *', fields.subject, { span: true }),
+      makeField('subject', 'Fach *', subject.element, { span: true }),
       makeField('day', 'Wochentag', fields.day),
       makeField('course', 'Kurs', fields.course, { hint: 'Kürzel wie im Vertretungsplan.' }),
       makeField('start', 'Beginn', fields.start),
@@ -464,11 +462,6 @@ function openLessonDialog(lesson = null) {
       makeField('teacher', 'Lehrkraft', fields.teacher),
       makeField('room', 'Raum', fields.room),
     ]),
-    el(
-      'datalist',
-      { id: 'lesson-subject-options' },
-      state.subjects.map((subject) => el('option', { value: subject.name })),
-    ),
   ]);
 
   const showErrors = (errors) => {
@@ -482,7 +475,7 @@ function openLessonDialog(lesson = null) {
 
   const submit = () => {
     const { valid, errors, value } = validateLessonInput({
-      subject: fields.subject.value,
+      subject: subject.getValue(),
       day: fields.day.value,
       start: fields.start.value,
       end: fields.end.value,

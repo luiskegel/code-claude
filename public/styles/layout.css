@@ -12,6 +12,7 @@
   position: sticky;
   top: 0;
   z-index: 30;
+  background: var(--bg);
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -79,6 +80,7 @@
   position: sticky;
   top: var(--header-height);
   z-index: 25;
+  background: var(--bg);
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -219,6 +221,13 @@
   }
 }
 
+/* Auf Tablet-Breite lieber zwei volle Reihen als eine einzelne Karte unten. */
+@media (min-width: 721px) and (max-width: 1000px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   :root {
     --header-height: 60px;
@@ -258,6 +267,7 @@
     right: 0;
     border-bottom: none;
     border-top: 1px solid var(--border);
+    background: var(--bg-elevated);
     background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
     padding-bottom: env(safe-area-inset-bottom, 0);
   }

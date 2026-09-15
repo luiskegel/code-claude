@@ -10,6 +10,7 @@ import { renderHeader } from './components/header.js';
 import { renderNav } from './components/nav.js';
 import { openTaskDialog } from './components/taskForm.js';
 import { showToast } from './components/toast.js';
+import { cleanupOrphanAttachments } from './data/attachments.js';
 import { dashboardView } from './views/dashboard.js';
 import { tasksView } from './views/tasks.js';
 import { calendarView } from './views/calendar.js';
@@ -146,6 +147,12 @@ function start() {
   });
 
   renderApp();
+
+  // Bilder gelöschter Aufgaben liegen sonst für immer in IndexedDB.
+  const usedAttachmentIds = new Set(
+    getState().tasks.flatMap((task) => (task.attachments ?? []).map((attachment) => attachment.id)),
+  );
+  cleanupOrphanAttachments(usedAttachmentIds);
 
   // Status des KI-Backends nachladen und Anzeige aktualisieren.
   loadAiStatus()

@@ -225,7 +225,9 @@
 }
 
 .task-card[data-state="overdue"] {
+  border-color: var(--danger);
   border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  background: var(--danger-soft);
   background: color-mix(in srgb, var(--danger-soft) 35%, var(--surface));
 }
 
@@ -449,6 +451,7 @@
 .select:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
@@ -527,6 +530,10 @@
 /* ---------- Dialog ---------- */
 
 .dialog {
+  /* Flex-Spalte, damit der Inhalt scrollt und der Fussbereich mit den
+     Aktionsbuttons immer sichtbar bleibt. */
+  display: flex;
+  flex-direction: column;
   width: min(640px, 100%);
   max-height: min(88vh, 900px);
   padding: 0;
@@ -558,10 +565,23 @@
   }
 }
 
+.dialog[open] {
+  display: flex;
+}
+
+.dialog:not([open]) {
+  display: none;
+}
+
 .dialog-form {
   display: flex;
   flex-direction: column;
-  max-height: inherit;
+  min-height: 0;
+}
+
+.dialog-head,
+.dialog-foot {
+  flex: none;
 }
 
 .dialog-head {
@@ -581,8 +601,11 @@
 }
 
 .dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: var(--space-5);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -776,6 +799,7 @@
 
 .calendar-day[data-today="true"] {
   border-color: var(--accent);
+  background: var(--accent-soft);
   background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
 }
 
@@ -922,7 +946,9 @@
 }
 
 .schedule-day[data-today='true'] .schedule-track {
+  background: var(--accent-soft);
   background: color-mix(in srgb, var(--accent-soft) 40%, var(--surface-muted));
+  border-color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
 }
 
@@ -952,6 +978,7 @@
   flex-direction: column;
   gap: 1px;
   padding: 6px 8px;
+  border: 1px solid var(--border);
   border: 1px solid color-mix(in srgb, var(--lesson-color) 45%, transparent);
   border-left: 3px solid var(--lesson-color);
   border-radius: var(--radius-sm);
@@ -1363,17 +1390,20 @@
 
 .alert[data-tone="warning"] {
   background: var(--warning-soft);
+  border-color: var(--warning);
   border-color: color-mix(in srgb, var(--warning) 35%, var(--border));
   color: var(--text);
 }
 
 .alert[data-tone="error"] {
   background: var(--danger-soft);
+  border-color: var(--danger);
   border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
 }
 
 .alert[data-tone="info"] {
   background: var(--info-soft);
+  border-color: var(--info);
   border-color: color-mix(in srgb, var(--info) 30%, var(--border));
 }
 

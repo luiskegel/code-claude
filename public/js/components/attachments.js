@@ -11,6 +11,7 @@ import {
   storeFile,
 } from '../data/attachments.js';
 import { showToast } from './toast.js';
+import { createId } from '../lib/id.js';
 import { openDialog } from './dialog.js';
 
 /**
@@ -18,13 +19,13 @@ import { openDialog } from './dialog.js';
  * @param {{initial?: Array, onChange?: Function}} options
  * @returns {{element: Node, getAttachments: Function}}
  */
-export function attachmentField({ initial = [], onChange = () => {} } = {}) {
+export function attachmentField({ initial = [], onChange = () => {}, id = createId('files') } = {}) {
   let attachments = [...initial];
 
   const list = el('div', { class: 'attachment-list' });
   const input = el('input', {
     type: 'file',
-    id: 'field-attachments',
+    id,
     accept: 'image/*,application/pdf',
     multiple: true,
     class: 'visually-hidden',

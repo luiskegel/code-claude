@@ -148,32 +148,87 @@ export async function storeFile(file) {
   };
 }
 
-/** Verkleinert ein Foto auf eine für die KI sinnvolle Kantenlänge. */
+/** Typen, die die KI direkt verarbeiten kann. Alles andere wird zu JPEG. */
+const AI_READY_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+/**
+ * Verkleinert ein Foto auf eine sinnvolle Kantenlänge und wandelt Formate um,
+ * die die KI nicht lesen kann (iPhone-Fotos sind oft HEIC).
+ */
 async function shrinkImage(file) {
-  if (typeof createImageBitmap !== 'function' || typeof OffscreenCanvas === 'undefined') return file;
+  const needsConversion = !AI_READY_TYPES.includes(String(file.type).toLowerCase());
 
   try {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(bitmap.width, bitmap.height));
+    const source = await loadImageSource(file);
+    const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(source.width, source.height));
 
-    // Kleine Bilder bleiben unverändert – erneutes Kodieren würde nur Qualität kosten.
-    if (scale === 1 && file.size <= 1.5 * 1024 * 1024) {
-      bitmap.close?.();
+    // Kleine Bilder im richtigen Format bleiben unverändert – erneutes Kodieren
+    // würde nur Qualität kosten.
+    if (scale === 1 && !needsConversion && file.size <= 1.5 * 1024 * 1024) {
+      source.close?.();
       return file;
     }
 
-    const width = Math.round(bitmap.width * scale);
-    const height = Math.round(bitmap.height * scale);
-    const canvas = new OffscreenCanvas(width, height);
-    const context = canvas.getContext('2d');
-    context.drawImage(bitmap, 0, 0, width, height);
-    bitmap.close?.();
+    const width = Math.max(1, Math.round(source.width * scale));
+    const height = Math.max(1, Math.round(source.height * scale));
+    const blob = await drawToJpeg(source, width, height);
+    source.close?.();
 
-    const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
-    return blob.size < file.size ? blob : file;
+    if (!blob) return file;
+    return needsConversion || blob.size < file.size ? blob : file;
   } catch (error) {
-    console.warn('Bild konnte nicht verkleinert werden, nutze das Original:', error);
+    console.warn('Bild konnte nicht umgewandelt werden, nutze das Original:', error);
     return file;
+  }
+}
+
+/** ImageBitmap wenn möglich, sonst ein klassisches <img>. */
+async function loadImageSource(file) {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      return await createImageBitmap(file);
+    } catch {
+      // Safari kann manche Formate nur über <img> dekodieren.
+    }
+  }
+
+  const url = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    return image;
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+}
+
+function drawToJpeg(source, width, height) {
+  // OffscreenCanvas gibt es erst ab Safari 16.4 – sonst ein normales Canvas.
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const canvas = new OffscreenCanvas(width, height);
+    canvas.getContext('2d').drawImage(source, 0, 0, width, height);
+    return canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d').drawImage(source, 0, 0, width, height);
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+}
+
+/** Entfernt Dateien, die zu keiner Aufgabe mehr gehören (z.B. nach dem Löschen). */
+export async function cleanupOrphanAttachments(usedIds) {
+  if (!isAttachmentStorageAvailable()) return;
+
+  try {
+    const keys = await transaction('readonly', (store) => store.getAllKeys());
+    const orphans = (keys ?? []).filter((key) => !usedIds.has(key));
+    for (const key of orphans) await deleteAttachmentBlob(key);
+    if (orphans.length) console.info(`${orphans.length} verwaiste Anhänge entfernt.`);
+  } catch (error) {
+    console.warn('Aufräumen der Anhänge fehlgeschlagen:', error);
   }
 }
 
