@@ -1,0 +1,14 @@
+{
+  "name": "smart-homework-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Digitales Hausaufgabenheft mit KI-Lernassistent",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  }
+}

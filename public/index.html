@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Smart Homework Manager – digitales Hausaufgabenheft mit KI-Lernassistent." />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Smart Homework Manager</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/layout.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+    <div class="app-shell">
+      <header class="app-header" id="app-header"></header>
+      <nav class="app-nav" id="app-nav" aria-label="Hauptnavigation"></nav>
+      <main class="app-main" id="main" tabindex="-1"></main>
+    </div>
+
+    <div class="toast-stack" id="toast-stack" role="status" aria-live="polite"></div>
+    <div id="dialog-root"></div>
+
+    <noscript>
+      <p style="padding: 2rem; text-align: center">
+        Diese Anwendung benötigt JavaScript. Bitte aktiviere JavaScript in deinem Browser.
+      </p>
+    </noscript>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
