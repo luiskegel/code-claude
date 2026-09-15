@@ -470,6 +470,14 @@
   font-weight: 560;
 }
 
+.link-button {
+  color: var(--accent);
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -858,6 +866,189 @@
   }
 }
 
+/* ---------- Stundenplan ---------- */
+
+.schedule {
+  display: grid;
+  grid-template-columns: 48px repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.schedule-times {
+  position: relative;
+  height: 620px;
+  margin-top: 42px;
+}
+
+.schedule-time {
+  position: absolute;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule-day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.schedule-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  height: 34px;
+  padding: 0 var(--space-2);
+}
+
+.schedule-day-name {
+  font-weight: 650;
+  font-size: var(--text-sm);
+}
+
+.schedule-day-full {
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-day[data-today='true'] .schedule-day-name {
+  color: var(--accent);
+}
+
+.schedule-day[data-today='true'] .schedule-track {
+  background: color-mix(in srgb, var(--accent-soft) 40%, var(--surface-muted));
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.schedule-track {
+  position: relative;
+  height: 620px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.schedule-free {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+}
+
+.lesson {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--lesson-color) 45%, transparent);
+  border-left: 3px solid var(--lesson-color);
+  border-radius: var(--radius-sm);
+  background: var(--lesson-soft);
+  color: var(--text);
+  text-align: left;
+  overflow: hidden;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.lesson:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+
+.lesson-subject {
+  font-size: var(--text-xs);
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.lesson-short {
+  padding: 4px 8px;
+  gap: 0;
+}
+
+.lesson-short .lesson-subject {
+  line-height: 1.15;
+}
+
+.lesson-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Kompakte Tagesliste statt Raster, sobald es eng wird. */
+@media (max-width: 860px) {
+  .schedule {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .schedule-times {
+    display: none;
+  }
+
+  .schedule-day-head {
+    height: auto;
+    padding: 0;
+  }
+
+  .schedule-track {
+    /* Die Höhen aus dem Raster gelten hier nicht – die Stunden stapeln sich. */
+    position: static;
+    height: auto !important;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: transparent;
+    border: none;
+  }
+
+  .schedule-free {
+    position: static;
+    padding: var(--space-1) var(--space-2);
+    display: block;
+  }
+
+  .lesson {
+    position: static !important;
+    top: auto !important;
+    height: auto !important;
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--surface);
+  }
+
+  .lesson-subject {
+    font-size: var(--text-sm);
+    flex: 1;
+  }
+
+  .lesson-meta {
+    font-size: var(--text-xs);
+  }
+}
+
 /* ---------- KI-Bereich ---------- */
 
 .ai-layout {
@@ -1028,6 +1219,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+.subject-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .subject-row {

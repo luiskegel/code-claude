@@ -154,6 +154,7 @@ export function createTask(value) {
     completed: false,
     completedAt: null,
     aiRequested: Boolean(value.aiRequested),
+    dueFromLesson: Boolean(value.dueFromLesson),
     createdAt: now,
     updatedAt: now,
   };
@@ -181,6 +182,7 @@ export function normalizeTask(raw) {
     completed: Boolean(raw.completed),
     completedAt: typeof raw.completedAt === 'string' ? raw.completedAt : null,
     aiRequested: Boolean(raw.aiRequested),
+    dueFromLesson: Boolean(raw.dueFromLesson),
     createdAt,
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : createdAt,
   };

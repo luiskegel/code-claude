@@ -7,8 +7,9 @@ import { taskCard } from '../components/taskCard.js';
 import { quickAdd } from '../components/quickAdd.js';
 import { openTaskDialog } from '../components/taskForm.js';
 import { emptyState } from '../components/emptyState.js';
-import { formatDuration } from '../lib/date.js';
+import { addDays, formatDuration, weekdayLong } from '../lib/date.js';
 import { subjectColor } from '../data/model.js';
+import { lessonsForDay, minutesOf } from '../data/schedule.js';
 
 export function dashboardView() {
   const state = getState();
@@ -52,7 +53,7 @@ export function dashboardView() {
               action: { label: 'Aufgabe hinzufügen', onClick: () => openTaskDialog() },
             }),
       ]),
-      el('aside', { class: 'section' }, [progressCard(stats), subjectCard(state)]),
+      el('aside', { class: 'section' }, [lessonsCard(state), progressCard(stats), subjectCard(state)]),
     ]),
   ]);
 }
@@ -86,6 +87,63 @@ function statGrid(stats) {
 function hintForOpen(stats) {
   const duration = formatDuration(stats.openMinutes);
   return duration ? `ca. ${duration} Arbeitszeit` : 'Keine Zeitschätzung hinterlegt';
+}
+
+/** Stundenplan des Tages – nach Unterrichtsschluss der nächste Schultag. */
+function lessonsCard(state) {
+  const now = new Date();
+  let lessons = lessonsForDay(state.schedule, now.getDay());
+  let label = 'Heute';
+
+  if (!lessons.length) {
+    for (let offset = 1; offset <= 7; offset += 1) {
+      const date = addDays(now, offset);
+      const candidates = lessonsForDay(state.schedule, date.getDay());
+      if (candidates.length) {
+        lessons = candidates;
+        label = offset === 1 ? 'Morgen' : weekdayLong(date);
+        break;
+      }
+    }
+  }
+
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return el('section', { class: 'card stack' }, [
+    el('div', { class: 'row' }, [
+      el('h3', { text: `Stundenplan · ${label}` }),
+      el(
+        'button',
+        {
+          class: 'btn btn-ghost btn-sm',
+          type: 'button',
+          style: { marginLeft: 'auto' },
+          on: { click: () => setView('schedule') },
+        },
+        ['Ganze Woche'],
+      ),
+    ]),
+    lessons.length
+      ? el(
+          'ul',
+          { class: 'subject-list' },
+          lessons.map((lesson) => {
+            const isOver = label === 'Heute' && minutesOf(lesson.end) <= nowMinutes;
+            return el('li', { class: 'subject-row', style: isOver ? { opacity: '0.5' } : {} }, [
+              el('span', {
+                class: 'subject-swatch',
+                style: { background: subjectColor(state.subjects, lesson.subject) },
+              }),
+              el('span', { class: 'subject-name', text: lesson.subject }),
+              el('span', {
+                class: 'subject-count',
+                text: [lesson.start, lesson.room].filter(Boolean).join(' · '),
+              }),
+            ]);
+          }),
+        )
+      : el('p', { class: 'muted', text: 'Für diese Woche ist kein Unterricht eingetragen.' }),
+  ]);
 }
 
 function progressCard(stats) {

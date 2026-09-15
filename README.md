@@ -43,6 +43,25 @@ allen anderen Aufgaben ehrlich, dass er sie nicht lösen kann, statt etwas zu er
 - Wochenkalender mit Blätterfunktion; Aufgaben ohne Termin stehen separat darunter
 - Fächerverwaltung mit eigenen Farben (Umbenennen passt bestehende Aufgaben mit an)
 
+**Stundenplan mit automatischen Abgabeterminen**
+
+- Wochenplan (Mo–Fr) mit Fach, Kurs, Lehrkraft, Raum und Zeiten; jede Stunde ist
+  anklickbar und lässt sich bearbeiten oder löschen
+- **Automatik:** Eine neue Aufgabe in einem Fach ist bis zum Beginn der nächsten Stunde
+  dieses Fachs fällig — legst du am Dienstagabend eine Mathe-Aufgabe an und die nächste
+  Mathestunde ist Donnerstag 08:00, steht genau das als Termin drin
+- Der Termin folgt dem Fach nur so lange, bis du das Datum selbst anfasst; danach bleibt
+  deine Eingabe stehen
+- Abschaltbar über den Schalter „Abgabetermin automatisch aus dem Stundenplan"
+- „Nächste Stunden" listet pro Fach den nächsten Termin — mit direktem Knopf zum Anlegen
+  einer Aufgabe
+- Der Plan gilt für jede Woche gleich; A/B-Wochen, Ferien und Vertretungen kennt er nicht
+
+Der mitgelieferte Plan stammt aus einem Screenshot des Vertretungsplans (KW 39). Die
+Kurskürzel wurden zu Fachnamen ausgeschrieben (`M-GK2` → Mathematik, `DL-LK1` → Deutsch,
+`EKL-LK1` → Erdkunde — diese Zuordnung ist geraten). Alles ist in der Ansicht änderbar,
+„Plan zurücksetzen" stellt den Ausgangszustand wieder her.
+
 **Schnelleingabe**
 
 Ein Satz genügt – die Erkennung läuft live mit:
@@ -150,9 +169,10 @@ public/                     alles, was der Browser sieht
     ├── app.js              Einstiegspunkt: Routing, Theme, Fehlerbehandlung
     ├── lib/                dom.js · date.js · markdown.js · quickAdd.js
     ├── data/               model.js (Modell + Validierung) · storage.js (localStorage)
+    │                       schedule.js (Stundenplan + nächste Stunde je Fach)
     ├── state/              store.js (Zustand + Aktionen) · selectors.js (Statistiken)
     ├── components/         header · nav · taskCard · taskForm · quickAdd · dialog · toast
-    ├── views/              dashboard · tasks · calendar · ai · subjects
+    ├── views/              dashboard · tasks · schedule · calendar · ai · subjects
     └── services/           aiModes.js · aiClient.js · mockAi.js
 
 server/
@@ -189,12 +209,25 @@ Gespeichert wird im `localStorage` unter dem Schlüssel `shm:data:v1`:
       "completed": false,
       "completedAt": null,
       "aiRequested": false,
+      "dueFromLesson": true,       // Termin kam aus dem Stundenplan
       "createdAt": "2026-09-15T12:00:00.000Z",
       "updatedAt": "2026-09-15T12:00:00.000Z"
     }
   ],
   "subjects": [{ "id": "sub_…", "name": "Mathematik", "color": "#4f46e5" }],
-  "settings": { "theme": "system" }
+  "schedule": [
+    {
+      "id": "les_…",
+      "day": 4,                    // 1 = Montag … 5 = Freitag
+      "start": "08:00",
+      "end": "09:30",
+      "subject": "Mathematik",
+      "course": "M-GK2",
+      "teacher": "HÖRN",
+      "room": "B305"
+    }
+  ],
+  "settings": { "theme": "system", "autoDueFromSchedule": true }
 }
 ```
 

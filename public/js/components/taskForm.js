@@ -6,6 +6,7 @@ import { showToast } from './toast.js';
 import { PRIORITIES, validateTaskInput } from '../data/model.js';
 import { addTask, getState, setView, updateTask } from '../state/store.js';
 import { todayISO } from '../lib/date.js';
+import { describeNextLesson, nextLessonFor } from '../data/schedule.js';
 
 /**
  * @param {{task?: object, preset?: object, detected?: string[]}} [options]
@@ -25,9 +26,14 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     ...(preset ?? {}),
   };
 
-  const subjects = getState().subjects;
+  const state = getState();
+  const subjects = state.subjects;
   const fields = {};
   const errorNodes = {};
+
+  // Solange der Termin nicht von Hand angefasst wurde, darf er dem Stundenplan folgen.
+  let dueTouched = isEdit || Boolean(preset?.dueDate);
+  let dueFromLesson = Boolean(task?.dueFromLesson);
 
   const makeField = (name, label, control, { hint = null, span = false } = {}) => {
     const errorNode = el('p', { class: 'field-error', hidden: true });
@@ -35,7 +41,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     return el('div', { class: `field${span ? ' span-2' : ''}`, data: { field: name } }, [
       el('label', { class: 'field-label', for: `field-${name}`, text: label }),
       control,
-      hint ? el('p', { class: 'field-hint', text: hint }) : null,
+      hint instanceof Node ? hint : hint ? el('p', { class: 'field-hint', text: hint }) : null,
       errorNode,
     ]);
   };
@@ -125,12 +131,65 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     checked: Boolean(initial.aiRequested),
   });
 
+  /* --- Abgabetermin aus dem Stundenplan --- */
+
+  const lessonHint = el('p', { class: 'field-hint' });
+
+  const applyNextLesson = (next) => {
+    fields.dueDate.value = next.date;
+    fields.dueTime.value = next.time;
+    dueFromLesson = true;
+    showErrors({});
+  };
+
+  const refreshLessonHint = () => {
+    const subjectName = fields.subject.value.trim();
+    const next = subjectName ? nextLessonFor(state.schedule, subjectName) : null;
+
+    if (!next) {
+      render(lessonHint, 'Leer lassen, wenn es keinen festen Termin gibt.');
+      return;
+    }
+
+    render(lessonHint, [
+      `Nächste ${subjectName}-Stunde: ${describeNextLesson(next)}. `,
+      el('button', {
+        class: 'link-button',
+        type: 'button',
+        text: 'Als Termin übernehmen',
+        on: {
+          click: () => {
+            applyNextLesson(next);
+            dueTouched = true;
+            refreshLessonHint();
+          },
+        },
+      }),
+    ]);
+  };
+
+  // Fachwechsel zieht den Termin nach, solange er nicht von Hand gesetzt wurde.
+  fields.subject.addEventListener('input', () => {
+    if (state.settings.autoDueFromSchedule && !dueTouched) {
+      const next = nextLessonFor(state.schedule, fields.subject.value.trim());
+      if (next) applyNextLesson(next);
+    }
+    refreshLessonHint();
+  });
+
+  for (const field of [fields.dueDate, fields.dueTime]) {
+    field.addEventListener('input', () => {
+      dueTouched = true;
+      dueFromLesson = false;
+    });
+  }
+
   const form = el('form', { class: 'dialog-form', id: 'task-form', novalidate: true }, [
     el('div', { class: 'form-grid' }, [
       makeField('title', 'Titel *', fields.title, { span: true }),
       makeField('subject', 'Fach *', fields.subject, { hint: 'Neue Fächer werden automatisch angelegt.' }),
       makeField('priority', 'Priorität', fields.priority),
-      makeField('dueDate', 'Abgabetermin', fields.dueDate, { hint: 'Leer lassen, wenn es keinen festen Termin gibt.' }),
+      makeField('dueDate', 'Abgabetermin', fields.dueDate, { hint: lessonHint }),
       makeField('dueTime', 'Uhrzeit (optional)', fields.dueTime),
       makeField('estimatedMinutes', 'Geschätzte Dauer (Minuten)', fields.estimatedMinutes),
       el('div', { class: 'field span-2' }, [
@@ -179,9 +238,8 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     }
 
     const wantsAi = fields.aiRequested.checked;
-    const saved = isEdit
-      ? updateTask(task.id, { ...value, aiRequested: wantsAi })
-      : addTask({ ...value, aiRequested: wantsAi });
+    const extra = { aiRequested: wantsAi, dueFromLesson: dueFromLesson && Boolean(value.dueDate) };
+    const saved = isEdit ? updateTask(task.id, { ...value, ...extra }) : addTask({ ...value, ...extra });
 
     close('save');
     showToast(isEdit ? 'Aufgabe aktualisiert.' : 'Aufgabe gespeichert.', { tone: 'success' });
@@ -221,6 +279,13 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
       }),
     ],
   });
+
+  // Ist das Fach schon bekannt (z.B. aus der Schnelleingabe), gleich terminieren.
+  if (!isEdit && state.settings.autoDueFromSchedule && !dueTouched) {
+    const next = nextLessonFor(state.schedule, fields.subject.value.trim());
+    if (next) applyNextLesson(next);
+  }
+  refreshLessonHint();
 
   fields.title.focus();
   return { close };

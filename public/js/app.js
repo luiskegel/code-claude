@@ -15,10 +15,12 @@ import { tasksView } from './views/tasks.js';
 import { calendarView } from './views/calendar.js';
 import { aiView, loadAiStatus } from './views/ai.js';
 import { subjectsView } from './views/subjects.js';
+import { scheduleView } from './views/schedule.js';
 
 const VIEWS = {
   dashboard: dashboardView,
   tasks: tasksView,
+  schedule: scheduleView,
   calendar: calendarView,
   ai: aiView,
   subjects: subjectsView,

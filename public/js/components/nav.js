@@ -7,9 +7,9 @@ import { getStats } from '../state/selectors.js';
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: 'home' },
   { id: 'tasks', label: 'Aufgaben', icon: 'list' },
+  { id: 'schedule', label: 'Stundenplan', icon: 'book' },
   { id: 'calendar', label: 'Kalender', icon: 'calendar' },
   { id: 'ai', label: 'KI-Hilfe', icon: 'sparkles' },
-  { id: 'subjects', label: 'Fächer', icon: 'book' },
 ];
 
 export function renderNav(container) {

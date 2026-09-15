@@ -14,13 +14,20 @@ import {
   normalizeSubject,
   normalizeTask,
 } from '../data/model.js';
+import {
+  DEFAULT_SCHEDULE,
+  createLesson,
+  normalizeLesson,
+  scheduleSubjects,
+} from '../data/schedule.js';
 
 const listeners = new Set();
 
 const state = {
   tasks: [],
   subjects: [],
-  settings: { theme: 'system' },
+  schedule: [],
+  settings: { theme: 'system', autoDueFromSchedule: true },
   ui: {
     view: 'dashboard',
     filter: 'today',
@@ -42,14 +49,20 @@ export function initStore() {
   state.subjects = subjects.length ? subjects : DEFAULT_SUBJECTS.map((s) => createSubject(s.name, s.color));
   state.tasks = Array.isArray(raw?.tasks) ? raw.tasks.map(normalizeTask).filter(Boolean) : [];
 
+  // Beim ersten Start wird der mitgelieferte Wochenplan übernommen.
+  state.schedule = Array.isArray(raw?.schedule)
+    ? raw.schedule.map(normalizeLesson).filter(Boolean)
+    : DEFAULT_SCHEDULE.map(createLesson);
+
   const theme = raw?.settings?.theme;
   state.settings.theme = ['light', 'dark', 'system'].includes(theme) ? theme : 'system';
+  state.settings.autoDueFromSchedule = raw?.settings?.autoDueFromSchedule !== false;
   state.storageOk = isStorageAvailable();
 
-  // Fächer aus vorhandenen Aufgaben ergänzen, falls sie fehlen.
-  for (const task of state.tasks) {
-    if (task.subject && !findSubject(state.subjects, task.subject)) {
-      state.subjects.push(createSubject(task.subject, nextSubjectColor()));
+  // Fächer aus Aufgaben und Stundenplan ergänzen, falls sie fehlen.
+  for (const name of [...state.tasks.map((task) => task.subject), ...scheduleSubjects(state.schedule)]) {
+    if (name && !findSubject(state.subjects, name)) {
+      state.subjects.push(createSubject(name, nextSubjectColor()));
     }
   }
 }
@@ -68,6 +81,7 @@ function commit({ persist = true } = {}) {
     const ok = saveRawState({
       tasks: state.tasks,
       subjects: state.subjects,
+      schedule: state.schedule,
       settings: state.settings,
     });
     if (!ok && state.storageOk) state.storageOk = false;
@@ -96,6 +110,56 @@ export function setWeekOffset(offset) {
 
 export function setTheme(theme) {
   state.settings.theme = theme;
+  commit();
+}
+
+export function setAutoDueFromSchedule(enabled) {
+  state.settings.autoDueFromSchedule = Boolean(enabled);
+  commit();
+}
+
+/* ---------------- Stundenplan ---------------- */
+
+export function addLesson(value) {
+  ensureSubject(value.subject);
+  const lesson = createLesson(value);
+  state.schedule.push(lesson);
+  commit();
+  return lesson;
+}
+
+export function updateLesson(id, changes) {
+  const lesson = state.schedule.find((entry) => entry.id === id);
+  if (!lesson) return null;
+
+  if (changes.subject) ensureSubject(changes.subject);
+  Object.assign(lesson, changes);
+  commit();
+  return lesson;
+}
+
+export function deleteLesson(id) {
+  const index = state.schedule.findIndex((entry) => entry.id === id);
+  if (index === -1) return null;
+
+  const [removed] = state.schedule.splice(index, 1);
+  commit();
+  return { lesson: removed, index };
+}
+
+export function restoreLesson(lesson, index) {
+  if (!lesson) return;
+  const position = Number.isInteger(index) ? Math.min(index, state.schedule.length) : state.schedule.length;
+  state.schedule.splice(position, 0, lesson);
+  commit();
+}
+
+/** Setzt den Stundenplan auf den mitgelieferten Wochenplan zurück. */
+export function resetSchedule() {
+  state.schedule = DEFAULT_SCHEDULE.map(createLesson);
+  for (const name of scheduleSubjects(state.schedule)) {
+    if (!findSubject(state.subjects, name)) state.subjects.push(createSubject(name, nextSubjectColor()));
+  }
   commit();
 }
 

@@ -49,6 +49,9 @@ export function taskCard(task) {
       text: task.completed ? 'Erledigt' : due.label,
     }),
     duration ? el('span', { class: 'badge', text: `⏱ ${duration}` }) : null,
+    task.dueFromLesson && !task.completed
+      ? el('span', { class: 'badge', title: 'Termin kommt aus dem Stundenplan', text: '🎓 bis zur nächsten Stunde' })
+      : null,
   ].filter(Boolean);
 
   return el(

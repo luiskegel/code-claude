@@ -7,6 +7,7 @@ import { openQuickAddConfirm } from './taskForm.js';
 import { showToast } from './toast.js';
 import { formatMediumDate } from '../lib/date.js';
 import { priorityLabel } from '../data/model.js';
+import { nextLessonFor } from '../data/schedule.js';
 
 const EXAMPLE = 'Mathe: Bis Freitag Aufgaben 3–8 auf Seite 124';
 
@@ -30,11 +31,19 @@ export function quickAdd() {
       return;
     }
 
-    const parsed = parseQuickInput(text, getState().subjects);
+    const state = getState();
+    const parsed = parseQuickInput(text, state.subjects);
     const chips = [];
     if (parsed.subject) chips.push(chip('Fach', parsed.subject));
     chips.push(chip('Aufgabe', parsed.title || '—'));
-    if (parsed.dueDate) chips.push(chip('Termin', formatMediumDate(parsed.dueDate)));
+
+    if (parsed.dueDate) {
+      chips.push(chip('Termin', formatMediumDate(parsed.dueDate)));
+    } else if (state.settings.autoDueFromSchedule && parsed.subject) {
+      // Ohne erkannten Termin greift der Stundenplan: fällig zur nächsten Stunde.
+      const next = nextLessonFor(state.schedule, parsed.subject);
+      if (next) chips.push(chip('Termin', `${formatMediumDate(next.date)}, ${next.time} (nächste Stunde)`));
+    }
     if (parsed.dueTime) chips.push(chip('Uhrzeit', `${parsed.dueTime} Uhr`));
     if (parsed.estimatedMinutes) chips.push(chip('Dauer', `${parsed.estimatedMinutes} min`));
     if (parsed.priority !== 'normal') chips.push(chip('Priorität', priorityLabel(parsed.priority)));
