@@ -198,8 +198,15 @@ function solveLinear(coefficients) {
  * @returns {{content: string, provider: 'mock'}}
  */
 export function generateMockAnswer(payload) {
-  const { mode = 'hint', question = '', userSolution = '', subject = '' } = payload ?? {};
+  const { mode = 'hint', question = '', userSolution = '', subject = '', images = [] } = payload ?? {};
   const analysis = analyzeQuestion(question);
+
+  // Bilder kann der Offline-Tutor nicht lesen – das wird klar gesagt, statt zu raten.
+  const imageNote = images.length
+    ? `> **${images.length === 1 ? 'Das angehängte Foto' : 'Die angehängten Fotos'} kann der Demo-Tutor nicht lesen.**\n` +
+      '> Fotos werden nur ausgewertet, wenn im Server ein KI-Schlüssel hinterlegt ist (siehe README).\n' +
+      '> Bis dahin: Tippe die Aufgabe kurz ab, dann kann hier gerechnet werden.\n\n'
+    : '';
 
   let content;
   if (analysis.kind === 'quadratic') content = quadraticAnswer(mode, analysis, userSolution);
@@ -207,7 +214,7 @@ export function generateMockAnswer(payload) {
   else if (analysis.kind === 'derivative') content = derivativeAnswer(mode, analysis, userSolution);
   else content = genericAnswer(mode, question, subject, userSolution);
 
-  return { content: `${content.trim()}\n`, provider: 'mock' };
+  return { content: `${imageNote}${content.trim()}\n`, provider: 'mock' };
 }
 
 function quadraticAnswer(mode, analysis, userSolution) {

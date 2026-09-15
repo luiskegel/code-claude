@@ -7,6 +7,7 @@ import { PRIORITIES, validateTaskInput } from '../data/model.js';
 import { addTask, getState, setView, updateTask } from '../state/store.js';
 import { todayISO } from '../lib/date.js';
 import { describeNextLesson, nextLessonFor } from '../data/schedule.js';
+import { attachmentField } from './attachments.js';
 
 /**
  * @param {{task?: object, preset?: object, detected?: string[]}} [options]
@@ -34,6 +35,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
   // Solange der Termin nicht von Hand angefasst wurde, darf er dem Stundenplan folgen.
   let dueTouched = isEdit || Boolean(preset?.dueDate);
   let dueFromLesson = Boolean(task?.dueFromLesson);
+  let lessonId = task?.lessonId ?? null;
 
   const makeField = (name, label, control, { hint = null, span = false } = {}) => {
     const errorNode = el('p', { class: 'field-error', hidden: true });
@@ -131,6 +133,8 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     checked: Boolean(initial.aiRequested),
   });
 
+  const attachments = attachmentField({ initial: initial.attachments ?? [] });
+
   /* --- Abgabetermin aus dem Stundenplan --- */
 
   const lessonHint = el('p', { class: 'field-hint' });
@@ -139,6 +143,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     fields.dueDate.value = next.date;
     fields.dueTime.value = next.time;
     dueFromLesson = true;
+    lessonId = next.lesson.id;
     showErrors({});
   };
 
@@ -181,6 +186,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     field.addEventListener('input', () => {
       dueTouched = true;
       dueFromLesson = false;
+      lessonId = null;
     });
   }
 
@@ -202,6 +208,7 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
         ]),
       ]),
       makeField('description', 'Beschreibung', fields.description, { span: true }),
+      attachments.element,
     ]),
     subjectOptions,
   ]);
@@ -238,7 +245,12 @@ export function openTaskDialog({ task = null, preset = null, detected = [] } = {
     }
 
     const wantsAi = fields.aiRequested.checked;
-    const extra = { aiRequested: wantsAi, dueFromLesson: dueFromLesson && Boolean(value.dueDate) };
+    const extra = {
+      aiRequested: wantsAi,
+      dueFromLesson: dueFromLesson && Boolean(value.dueDate),
+      lessonId: dueFromLesson ? lessonId : null,
+      attachments: attachments.getAttachments(),
+    };
     const saved = isEdit ? updateTask(task.id, { ...value, ...extra }) : addTask({ ...value, ...extra });
 
     close('save');

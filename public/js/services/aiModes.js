@@ -68,11 +68,19 @@ export function buildSystemPrompt(modeId) {
 }
 
 /** Baut die Nutzernachricht aus Aufgabenkontext, Frage und optionaler eigener Lösung. */
-export function buildUserPrompt({ question, subject, taskTitle, userSolution }) {
+export function buildUserPrompt({ question, subject, taskTitle, userSolution, images = [] }) {
   const parts = [];
   if (subject) parts.push(`Fach: ${subject}`);
   if (taskTitle) parts.push(`Hausaufgabe: ${taskTitle}`);
-  parts.push(`Aufgabe:\n${question}`);
+
+  if (images.length) {
+    parts.push(
+      `Oben ${images.length === 1 ? 'siehst du ein Foto' : `siehst du ${images.length} Fotos`} der Aufgabe. ` +
+        'Lies die Aufgabenstellung daraus ab. Ist etwas unleserlich, sage das ausdrücklich, statt zu raten.',
+    );
+  }
+
+  parts.push(`Aufgabe:\n${question || '(siehe Foto)'}`);
   if (userSolution) parts.push(`Meine eigene Lösung:\n${userSolution}`);
   return parts.join('\n\n');
 }

@@ -2,7 +2,8 @@
  * Sehr kleiner Markdown-Renderer für KI-Antworten.
  * Erzeugt echte DOM-Knoten statt HTML-Strings – dadurch ist keine
  * Escaping-Lücke möglich, selbst wenn die Antwort HTML enthält.
- * Unterstützt: Überschriften (##/###), Listen, Trennlinien, **fett**, *kursiv*, `code`.
+ * Unterstützt: Überschriften (##/###), Listen, Zitate (>), Trennlinien,
+ * **fett**, *kursiv*, `code`.
  */
 
 import { el, fragment } from './dom.js';
@@ -12,6 +13,7 @@ export function renderMarkdown(text) {
   const blocks = [];
   let paragraph = [];
   let list = null;
+  let quote = null;
 
   const flushParagraph = () => {
     if (paragraph.length) {
@@ -27,14 +29,33 @@ export function renderMarkdown(text) {
     }
   };
 
+  const flushQuote = () => {
+    if (quote) {
+      blocks.push(el('blockquote', {}, quote.map((line) => el('p', {}, renderInline(line)))));
+      quote = null;
+    }
+  };
+
   for (const rawLine of lines) {
     const line = rawLine.trimEnd();
 
     if (!line.trim()) {
       flushParagraph();
       flushList();
+      flushQuote();
       continue;
     }
+
+    const quoted = /^>\s?(.*)$/.exec(line);
+    if (quoted) {
+      flushParagraph();
+      flushList();
+      if (!quote) quote = [];
+      if (quoted[1].trim()) quote.push(quoted[1].trim());
+      continue;
+    }
+
+    flushQuote();
 
     if (/^(-{3,}|_{3,})$/.test(line.trim())) {
       flushParagraph();
@@ -71,6 +92,7 @@ export function renderMarkdown(text) {
 
   flushParagraph();
   flushList();
+  flushQuote();
 
   return fragment(blocks);
 }

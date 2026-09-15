@@ -43,6 +43,19 @@ allen anderen Aufgaben ehrlich, dass er sie nicht lösen kann, statt etwas zu er
 - Wochenkalender mit Blätterfunktion; Aufgaben ohne Termin stehen separat darunter
 - Fächerverwaltung mit eigenen Farben (Umbenennen passt bestehende Aufgaben mit an)
 
+**Fotos anhängen und von der KI lösen lassen**
+
+- Jede Aufgabe kann Fotos (Buchseite, Arbeitsblatt, Tafelbild) oder PDFs tragen –
+  bis zu 6 Anhänge, Fotos werden vor dem Speichern auf 1600 px verkleinert
+- Die Bilder liegen in IndexedDB (nicht im localStorage, der dafür zu klein ist);
+  im Aufgaben-Datensatz stehen nur Name, Typ und Grösse
+- In der KI-Ansicht werden die Fotos bei jeder Anfrage mitgeschickt: Der Server reicht
+  sie als Bild-Blöcke an die Claude-API weiter, die die Aufgabe daraus liest und löst
+- **Ohne hinterlegten API-Schlüssel sagt der Demo-Tutor ausdrücklich, dass er das Foto
+  nicht lesen kann** – er rät nicht
+- „Lösung bei der Aufgabe speichern" hängt die Antwort an die Hausaufgabe. Sie ist danach
+  auf der Aufgabenkarte („Lösung") und im Stundenplan bei der passenden Stunde abrufbar
+
 **Stundenplan mit automatischen Abgabeterminen**
 
 - Wochenplan (Mo–Fr) mit Fach, Kurs, Lehrkraft, Raum und Zeiten; jede Stunde ist
@@ -55,6 +68,9 @@ allen anderen Aufgaben ehrlich, dass er sie nicht lösen kann, statt etwas zu er
 - Abschaltbar über den Schalter „Abgabetermin automatisch aus dem Stundenplan"
 - „Nächste Stunden" listet pro Fach den nächsten Termin — mit direktem Knopf zum Anlegen
   einer Aufgabe
+- Klick auf eine Stunde öffnet **„Hausaufgaben für diese Stunde"**: alle Aufgaben, die zu
+  dieser Stunde fällig sind, mit ihren Fotos und der gespeicherten Lösung zum Aufklappen.
+  Eine kleine Zahl an der Stunde zeigt, wie viel dort offen ist
 - Der Plan gilt für jede Woche gleich; A/B-Wochen, Ferien und Vertretungen kennt er nicht
 
 Der mitgelieferte Plan stammt aus einem Screenshot des Vertretungsplans (KW 39). Die
@@ -167,11 +183,13 @@ public/                     alles, was der Browser sieht
 │   └── components.css      Karten, Buttons, Formulare, Dialoge, Kalender, KI-Panel
 └── js/
     ├── app.js              Einstiegspunkt: Routing, Theme, Fehlerbehandlung
-    ├── lib/                dom.js · date.js · markdown.js · quickAdd.js
+    ├── lib/                dom.js · date.js · markdown.js · quickAdd.js · id.js
     ├── data/               model.js (Modell + Validierung) · storage.js (localStorage)
     │                       schedule.js (Stundenplan + nächste Stunde je Fach)
+    │                       attachments.js (Fotos in IndexedDB, Verkleinerung)
     ├── state/              store.js (Zustand + Aktionen) · selectors.js (Statistiken)
     ├── components/         header · nav · taskCard · taskForm · quickAdd · dialog · toast
+    │                       attachments (Fotos auswählen, anzeigen, entfernen)
     ├── views/              dashboard · tasks · schedule · calendar · ai · subjects
     └── services/           aiModes.js · aiClient.js · mockAi.js
 
@@ -191,7 +209,8 @@ Styling (`styles/`).
 
 ## Datenspeicherung
 
-Gespeichert wird im `localStorage` unter dem Schlüssel `shm:data:v1`:
+Aufgaben, Fächer, Stundenplan und Einstellungen liegen im `localStorage` unter dem
+Schlüssel `shm:data:v1`; die Anhänge selbst in der IndexedDB-Datenbank `shm-attachments`:
 
 ```jsonc
 {
@@ -210,6 +229,16 @@ Gespeichert wird im `localStorage` unter dem Schlüssel `shm:data:v1`:
       "completedAt": null,
       "aiRequested": false,
       "dueFromLesson": true,       // Termin kam aus dem Stundenplan
+      "lessonId": "les_…",         // zu dieser Stunde gehört die Aufgabe
+      "attachments": [             // Dateien selbst liegen in IndexedDB
+        { "id": "att_…", "name": "foto.jpg", "type": "image/jpeg", "size": 184320, "isImage": true }
+      ],
+      "solution": {                // von der KI gespeicherte Lösung
+        "content": "### Schritt für Schritt …",
+        "mode": "steps",
+        "provider": "anthropic",
+        "savedAt": "2026-09-15T20:10:00.000Z"
+      },
       "createdAt": "2026-09-15T12:00:00.000Z",
       "updatedAt": "2026-09-15T12:00:00.000Z"
     }

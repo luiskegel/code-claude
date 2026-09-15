@@ -6,7 +6,7 @@
  */
 
 import { addDays, toISODate, weekdayLong } from '../lib/date.js';
-import { createId } from './model.js';
+import { createId } from '../lib/id.js';
 
 export const WEEKDAYS = [
   { day: 1, short: 'Mo', long: 'Montag' },

@@ -17,6 +17,7 @@ import {
   addLesson,
   deleteLesson,
   getState,
+  toggleTaskCompleted,
   resetSchedule,
   restoreLesson,
   setAutoDueFromSchedule,
@@ -24,6 +25,9 @@ import {
   updateLesson,
 } from '../state/store.js';
 import { openDialog, confirmDialog } from '../components/dialog.js';
+import { renderMarkdown } from '../lib/markdown.js';
+import { attachmentThumb } from '../components/attachments.js';
+import { describeDueDate } from '../lib/date.js';
 import { showToast } from '../components/toast.js';
 import { emptyState } from '../components/emptyState.js';
 import { openTaskDialog } from '../components/taskForm.js';
@@ -137,6 +141,7 @@ function lessonBlock(lesson, state) {
   const color = subjectColor(state.subjects, lesson.subject);
   // In einer Einzelstunde ist kein Platz für Kurs und Raum – die stehen im Tooltip.
   const isShort = minutesOf(lesson.end) - minutesOf(lesson.start) <= 50;
+  const openTaskCount = tasksForLesson(state, lesson).filter((task) => !task.completed).length;
 
   return el(
     'button',
@@ -149,10 +154,17 @@ function lessonBlock(lesson, state) {
         top: `${top}%`,
         height: `${Math.max(height, 6)}%`,
       },
-      title: `${lesson.subject} · ${lesson.start}–${lesson.end}${lesson.room ? ` · ${lesson.room}` : ''} (bearbeiten)`,
-      on: { click: () => openLessonDialog(lesson) },
+      title: `${lesson.subject} · ${lesson.start}–${lesson.end}${lesson.room ? ` · ${lesson.room}` : ''}`,
+      on: { click: () => openLessonDetail(lesson) },
     },
     [
+      openTaskCount
+        ? el('span', {
+            class: 'lesson-badge',
+            text: String(openTaskCount),
+            title: `${openTaskCount} Hausaufgabe(n) für diese Stunde`,
+          })
+        : null,
       el('span', { class: 'lesson-subject', text: lesson.subject }),
       el('span', { class: 'lesson-meta', text: `${lesson.start}–${lesson.end}` }),
       !isShort && (lesson.course || lesson.room)
@@ -205,6 +217,162 @@ function nextLessonsCard(state) {
         ]),
       ),
     ),
+  ]);
+}
+
+/* ---------------- Hausaufgaben einer Stunde ---------------- */
+
+/**
+ * Aufgaben, die zu dieser Stunde gehören: entweder direkt zugeordnet
+ * (automatischer Termin) oder im selben Fach am Tag der Stunde fällig.
+ */
+export function tasksForLesson(state, lesson) {
+  const next = nextLessonFor(state.schedule, lesson.subject);
+  const nextDateForThisLesson = next?.lesson.id === lesson.id ? next.date : null;
+
+  return state.tasks
+    .filter((task) => {
+      if (task.lessonId === lesson.id) return true;
+      if (!nextDateForThisLesson) return false;
+      return (
+        task.subject.toLowerCase() === lesson.subject.toLowerCase() && task.dueDate === nextDateForThisLesson
+      );
+    })
+    .sort((a, b) => Number(a.completed) - Number(b.completed) || a.dueDate.localeCompare(b.dueDate));
+}
+
+/** Klick auf eine Stunde: Was ist für diese Stunde zu tun – inklusive gelöster Aufgaben. */
+function openLessonDetail(lesson) {
+  const state = getState();
+  const tasks = tasksForLesson(state, lesson);
+
+  const meta = [
+    `${WEEKDAYS.find((day) => day.day === lesson.day)?.long ?? ''}, ${lesson.start}–${lesson.end} Uhr`,
+    lesson.room ? `Raum ${lesson.room}` : null,
+    lesson.teacher || null,
+    lesson.course || null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const body = el('div', { class: 'stack' }, [
+    el('p', { class: 'muted', text: meta }),
+    el('h3', { text: 'Hausaufgaben für diese Stunde' }),
+    tasks.length
+      // close() existiert erst nach openDialog – deshalb verzögert aufrufen.
+      ? el('div', { class: 'stack' }, tasks.map((task) => lessonTaskRow(task, (reason) => close(reason))))
+      : el('p', { class: 'muted', text: 'Für diese Stunde ist nichts aufgegeben.' }),
+  ]);
+
+  const { close } = openDialog({
+    title: lesson.subject,
+    body,
+    footer: [
+      el('button', {
+        class: 'btn btn-secondary',
+        type: 'button',
+        text: 'Stunde bearbeiten',
+        on: {
+          click: () => {
+            close('edit');
+            openLessonDialog(lesson);
+          },
+        },
+      }),
+      el('button', {
+        class: 'btn btn-primary',
+        type: 'button',
+        text: '+ Hausaufgabe',
+        on: {
+          click: () => {
+            close('add');
+            openTaskDialog({
+              preset: {
+                subject: lesson.subject,
+                dueDate: nextDateOf(state, lesson),
+                dueTime: lesson.start,
+              },
+            });
+          },
+        },
+      }),
+    ],
+  });
+}
+
+function nextDateOf(state, lesson) {
+  const next = nextLessonFor(state.schedule, lesson.subject);
+  return next?.lesson.id === lesson.id ? next.date : '';
+}
+
+/** Eine Aufgabe im Stunden-Dialog – mit Fotos und der gespeicherten Lösung. */
+function lessonTaskRow(task, closeDialog) {
+  const due = describeDueDate(task.dueDate, task.dueTime);
+  const solutionBox = el('div', { class: 'solution-box', hidden: true });
+  let solutionShown = false;
+
+  const toggleSolution = () => {
+    solutionShown = !solutionShown;
+    solutionBox.hidden = !solutionShown;
+    if (solutionShown && !solutionBox.childElementCount) {
+      render(solutionBox, [
+        el('div', { class: 'ai-content' }, [renderMarkdown(task.solution.content)]),
+        el('p', {
+          class: 'field-hint',
+          text: `Gespeichert am ${new Date(task.solution.savedAt).toLocaleString('de-DE')} · ${
+            task.solution.provider === 'mock' ? 'Demo-Tutor' : `KI: ${task.solution.provider}`
+          }`,
+        }),
+      ]);
+    }
+  };
+
+  return el('article', { class: 'lesson-task' }, [
+    el('div', { class: 'row' }, [
+      el('strong', { text: task.title }),
+      el('span', {
+        class: 'badge',
+        data: { tone: task.completed ? 'done' : due.tone },
+        text: task.completed ? 'Erledigt' : due.label,
+      }),
+      task.solution ? el('span', { class: 'badge', data: { tone: 'done' }, text: '✓ Lösung liegt bereit' }) : null,
+    ]),
+    task.description ? el('p', { class: 'muted', text: task.description }) : null,
+    task.attachments?.length
+      ? el('div', { class: 'attachment-list' }, task.attachments.map((attachment) => attachmentThumb(attachment)))
+      : null,
+    el('div', { class: 'row' }, [
+      task.solution
+        ? el('button', {
+            class: 'btn btn-primary btn-sm',
+            type: 'button',
+            text: 'Lösung anzeigen',
+            on: { click: toggleSolution },
+          })
+        : el('button', {
+            class: 'btn btn-secondary btn-sm',
+            type: 'button',
+            text: '✨ Mit KI lösen',
+            on: {
+              click: () => {
+                closeDialog('ai');
+                setView('ai', { aiTaskId: task.id });
+              },
+            },
+          }),
+      el('button', {
+        class: 'btn btn-ghost btn-sm',
+        type: 'button',
+        text: task.completed ? 'Doch nicht erledigt' : 'Erledigt',
+        on: {
+          click: () => {
+            toggleTaskCompleted(task.id);
+            closeDialog('done');
+          },
+        },
+      }),
+    ]),
+    solutionBox,
   ]);
 }
 

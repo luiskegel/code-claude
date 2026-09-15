@@ -8,7 +8,10 @@ import { el, icon, render } from '../lib/dom.js';
 import { renderMarkdown } from '../lib/markdown.js';
 import { AI_MODES, getMode } from '../services/aiModes.js';
 import { AiError, fetchAiStatus, requestAiAnswer } from '../services/aiClient.js';
-import { getState, setView, toggleTaskCompleted } from '../state/store.js';
+import { getState, setView, toggleTaskCompleted, updateTask } from '../state/store.js';
+import { attachmentField, attachmentThumb } from '../components/attachments.js';
+import { getAttachmentBase64, isImageType } from '../data/attachments.js';
+import { describeNextLesson, nextLessonFor } from '../data/schedule.js';
 import { confirmDialog } from '../components/dialog.js';
 import { showToast } from '../components/toast.js';
 import { emptyState } from '../components/emptyState.js';
@@ -24,6 +27,8 @@ const aiState = {
   notice: null,
   error: null,
   loading: false,
+  extraAttachments: [],
+  savedFor: null,
 };
 
 let status = { provider: 'mock', configured: false };
@@ -47,6 +52,8 @@ export function aiView() {
       aiState.answer = null;
       aiState.error = null;
       aiState.userSolution = '';
+      aiState.extraAttachments = [];
+      aiState.savedFor = null;
     }
   }
 
@@ -57,7 +64,7 @@ export function aiView() {
 
   const refresh = () => {
     renderModes(modeGrid, run);
-    renderAnswer(answerPanel);
+    renderAnswer(answerPanel, linkedTask, refresh);
   };
 
   const questionField = el('textarea', {
@@ -83,11 +90,35 @@ export function aiView() {
     aiState.userSolution = solutionField.value;
   });
 
+  const extraFiles = attachmentField({
+    initial: aiState.extraAttachments,
+    onChange: (list) => {
+      aiState.extraAttachments = list;
+    },
+  });
+
+  /** Fotos der Aufgabe und zusätzlich angehängte Bilder für die KI aufbereiten. */
+  async function collectImages() {
+    const sources = [...(linkedTask?.attachments ?? []), ...aiState.extraAttachments].filter((attachment) =>
+      isImageType(attachment.type),
+    );
+
+    const images = [];
+    for (const attachment of sources.slice(0, 4)) {
+      const image = await getAttachmentBase64(attachment.id);
+      if (image) images.push(image);
+    }
+    return images;
+  }
+
   async function run(modeId) {
     aiState.mode = modeId;
 
-    if (!questionField.value.trim()) {
-      aiState.error = 'Bitte gib zuerst eine Aufgabe ein oder übernimm eine Hausaufgabe.';
+    const hasImages =
+      [...(linkedTask?.attachments ?? []), ...aiState.extraAttachments].some((a) => isImageType(a.type));
+
+    if (!questionField.value.trim() && !hasImages) {
+      aiState.error = 'Bitte gib zuerst eine Aufgabe ein, übernimm eine Hausaufgabe oder hänge ein Foto an.';
       refresh();
       questionField.focus();
       return;
@@ -117,17 +148,20 @@ export function aiView() {
     refresh();
 
     try {
+      const images = await collectImages();
       const result = await requestAiAnswer({
         mode: modeId,
         question: questionField.value.trim(),
         userSolution: solutionField.value.trim(),
         subject: linkedTask?.subject ?? '',
         taskTitle: linkedTask?.title ?? '',
+        images,
       });
       aiState.answer = result.content;
       aiState.answerMode = modeId;
       aiState.provider = result.provider;
       aiState.notice = result.notice ?? null;
+      aiState.savedFor = null;
     } catch (error) {
       aiState.error =
         error instanceof AiError ? error.message : 'Unbekannter Fehler bei der KI-Anfrage. Bitte erneut versuchen.';
@@ -157,6 +191,8 @@ export function aiView() {
             text: 'Tipp: Schreib die Aufgabe so ab, wie sie im Buch steht – inklusive Formeln.',
           }),
         ]),
+        linkedTask?.attachments?.length ? taskAttachments(linkedTask) : null,
+        extraFiles.element,
         el('div', { class: 'field' }, [
           el('label', { class: 'field-label', for: 'ai-solution', text: 'Deine Lösung (optional)' }),
           solutionField,
@@ -223,7 +259,7 @@ function renderModes(container, run) {
   );
 }
 
-function renderAnswer(container) {
+function renderAnswer(container, linkedTask, refresh) {
   if (aiState.loading) {
     render(container, [
       el('div', { class: 'ai-loading' }, [
@@ -272,6 +308,75 @@ function renderAnswer(container) {
       ? el('div', { class: 'alert', data: { tone: 'warning' } }, [el('span', { text: aiState.notice })])
       : null,
     el('div', { class: 'ai-content' }, [renderMarkdown(aiState.answer)]),
+    saveSolutionBar(linkedTask, refresh),
+  ]);
+}
+
+/**
+ * Speichert die Antwort an der Hausaufgabe. Dadurch taucht sie im Stundenplan
+ * bei der Stunde auf, für die die Aufgabe fällig ist.
+ */
+function saveSolutionBar(linkedTask, refresh) {
+  if (!linkedTask) {
+    return el('p', {
+      class: 'field-hint',
+      text: 'Tipp: Übernimm oben eine Hausaufgabe, dann kannst du die Lösung direkt bei ihr speichern.',
+    });
+  }
+
+  const state = getState();
+  const lesson = state.schedule.find((entry) => entry.id === linkedTask.lessonId) ?? null;
+  const next = lesson ? null : nextLessonFor(state.schedule, linkedTask.subject);
+  const target = lesson
+    ? `${lesson.subject} am ${WEEKDAY_NAMES[lesson.day] ?? ''} um ${lesson.start} Uhr`
+    : next
+      ? `${linkedTask.subject}: ${describeNextLesson(next)}`
+      : null;
+
+  const alreadySaved = aiState.savedFor === linkedTask.id;
+
+  return el('div', { class: 'solution-save' }, [
+    el(
+      'button',
+      {
+        class: `btn ${alreadySaved ? 'btn-secondary' : 'btn-primary'} btn-sm`,
+        type: 'button',
+        on: {
+          click: () => {
+            // Erst den Zustand setzen: updateTask zeichnet die Ansicht sofort neu.
+            aiState.savedFor = linkedTask.id;
+            updateTask(linkedTask.id, {
+              solution: {
+                content: aiState.answer,
+                mode: aiState.answerMode ?? aiState.mode,
+                provider: aiState.provider ?? 'unbekannt',
+                savedAt: new Date().toISOString(),
+              },
+            });
+            showToast(
+              target ? `Lösung gespeichert – liegt bereit für ${target}.` : 'Lösung bei der Aufgabe gespeichert.',
+              { tone: 'success' },
+            );
+            refresh?.();
+          },
+        },
+      },
+      [alreadySaved ? '✓ Lösung gespeichert' : '💾 Lösung bei der Aufgabe speichern'],
+    ),
+    target
+      ? el('span', { class: 'field-hint', text: `Erscheint im Stundenplan bei: ${target}` })
+      : el('span', { class: 'field-hint', text: 'Die Aufgabe ist keiner Stunde zugeordnet.' }),
+  ]);
+}
+
+const WEEKDAY_NAMES = { 1: 'Montag', 2: 'Dienstag', 3: 'Mittwoch', 4: 'Donnerstag', 5: 'Freitag' };
+
+/** Fotos, die bereits an der Hausaufgabe hängen. */
+function taskAttachments(task) {
+  return el('div', { class: 'field' }, [
+    el('span', { class: 'field-label', text: 'Fotos dieser Hausaufgabe' }),
+    el('div', { class: 'attachment-list' }, task.attachments.map((attachment) => attachmentThumb(attachment))),
+    el('p', { class: 'field-hint', text: 'Diese Bilder werden bei jeder Anfrage mitgeschickt.' }),
   ]);
 }
 

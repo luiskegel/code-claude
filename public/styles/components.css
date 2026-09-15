@@ -1049,6 +1049,157 @@
   }
 }
 
+/* ---------- Anhänge ---------- */
+
+.attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.attachment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 112px;
+  margin: 0;
+}
+
+.attachment-open {
+  display: block;
+  width: 112px;
+  height: 84px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  overflow: hidden;
+  transition: border-color var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+.attachment-open:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.attachment-preview {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 1.75rem;
+}
+
+.attachment-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.attachment-caption {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.attachment-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-size {
+  color: var(--text-subtle);
+}
+
+.attachment-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+.attachment-remove:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.attachment-full {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+/* Miniaturen auf der Aufgabenkarte */
+.task-card .attachment-list {
+  gap: var(--space-2);
+}
+
+.task-card .attachment,
+.task-card .attachment-open {
+  width: 72px;
+}
+
+.task-card .attachment-open {
+  height: 56px;
+}
+
+/* ---------- Gespeicherte Lösung ---------- */
+
+.solution-save {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.solution-box {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.lesson-task {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.lesson-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--lesson-color);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
 /* ---------- KI-Bereich ---------- */
 
 .ai-layout {
@@ -1156,6 +1307,19 @@
   background: var(--surface-muted);
   font-family: var(--font-mono);
   font-size: 0.92em;
+}
+
+.ai-content blockquote {
+  margin: var(--space-3) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--warning);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--warning-soft);
+  color: var(--text);
+}
+
+.ai-content blockquote p {
+  margin: var(--space-1) 0;
 }
 
 .ai-content hr {

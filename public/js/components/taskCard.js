@@ -12,7 +12,9 @@ import {
   toggleTaskCompleted,
 } from '../state/store.js';
 import { showToast } from './toast.js';
-import { confirmDialog } from './dialog.js';
+import { attachmentThumb } from './attachments.js';
+import { renderMarkdown } from '../lib/markdown.js';
+import { confirmDialog, openDialog } from './dialog.js';
 import { openTaskDialog } from './taskForm.js';
 
 export function taskCard(task) {
@@ -52,6 +54,9 @@ export function taskCard(task) {
     task.dueFromLesson && !task.completed
       ? el('span', { class: 'badge', title: 'Termin kommt aus dem Stundenplan', text: '🎓 bis zur nächsten Stunde' })
       : null,
+    task.solution
+      ? el('span', { class: 'badge', data: { tone: 'done' }, text: '✓ Lösung gespeichert' })
+      : null,
   ].filter(Boolean);
 
   return el(
@@ -68,6 +73,13 @@ export function taskCard(task) {
           task.description ? el('p', { class: 'task-desc', text: task.description }) : null,
         ]),
       ]),
+      task.attachments?.length
+        ? el(
+            'div',
+            { class: 'attachment-list' },
+            task.attachments.slice(0, 4).map((attachment) => attachmentThumb(attachment)),
+          )
+        : null,
       el('div', { class: 'task-meta' }, badges),
       el('div', { class: 'task-actions' }, [
         el(
@@ -79,6 +91,18 @@ export function taskCard(task) {
           },
           ['✨ Mit KI'],
         ),
+        task.solution
+          ? el(
+              'button',
+              {
+                class: 'btn btn-ghost btn-sm',
+                type: 'button',
+                text: 'Lösung',
+                title: 'Gespeicherte Lösung ansehen',
+                on: { click: () => showSolution(task) },
+              },
+            )
+          : null,
         el(
           'button',
           {
@@ -120,6 +144,22 @@ export function taskCard(task) {
       ]),
     ],
   );
+}
+
+/** Zeigt die von der KI gespeicherte Lösung. */
+function showSolution(task) {
+  openDialog({
+    title: `Lösung: ${task.title}`,
+    body: el('div', { class: 'stack' }, [
+      el('div', { class: 'ai-content' }, [renderMarkdown(task.solution.content)]),
+      el('p', {
+        class: 'field-hint',
+        text: `Gespeichert am ${new Date(task.solution.savedAt).toLocaleString('de-DE')} · ${
+          task.solution.provider === 'mock' ? 'Demo-Tutor' : `KI: ${task.solution.provider}`
+        }`,
+      }),
+    ]),
+  });
 }
 
 function handleToggle(id) {

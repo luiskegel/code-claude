@@ -1,6 +1,10 @@
 /** Datenmodell: Prioritäten, Fächer, Aufgaben – inklusive Validierung und Normalisierung. */
 
 import { isValidISODate, isValidTime, todayISO, daysBetween } from '../lib/date.js';
+import { normalizeAttachment } from './attachments.js';
+import { createId } from '../lib/id.js';
+
+export { createId };
 
 export const PRIORITIES = [
   { id: 'low', label: 'Niedrig', weight: 0 },
@@ -40,13 +44,6 @@ export const DEFAULT_SUBJECTS = [
   { name: 'Physik', color: '#8b5cf6' },
   { name: 'Geschichte', color: '#f59e0b' },
 ];
-
-export function createId(prefix = 'id') {
-  const random =
-    globalThis.crypto?.randomUUID?.() ??
-    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  return `${prefix}_${random}`;
-}
 
 /* ---------------- Fächer ---------------- */
 
@@ -155,8 +152,22 @@ export function createTask(value) {
     completedAt: null,
     aiRequested: Boolean(value.aiRequested),
     dueFromLesson: Boolean(value.dueFromLesson),
+    lessonId: value.lessonId ?? null,
+    attachments: Array.isArray(value.attachments) ? value.attachments.map(normalizeAttachment).filter(Boolean) : [],
+    solution: normalizeSolution(value.solution),
     createdAt: now,
     updatedAt: now,
+  };
+}
+
+/** Von der KI erarbeitete Lösung, die an der Aufgabe hängt. */
+export function normalizeSolution(raw) {
+  if (!raw || typeof raw !== 'object' || typeof raw.content !== 'string' || !raw.content.trim()) return null;
+  return {
+    content: raw.content.slice(0, 20000),
+    mode: typeof raw.mode === 'string' ? raw.mode : 'steps',
+    provider: typeof raw.provider === 'string' ? raw.provider : 'unbekannt',
+    savedAt: typeof raw.savedAt === 'string' ? raw.savedAt : new Date().toISOString(),
   };
 }
 
@@ -183,6 +194,9 @@ export function normalizeTask(raw) {
     completedAt: typeof raw.completedAt === 'string' ? raw.completedAt : null,
     aiRequested: Boolean(raw.aiRequested),
     dueFromLesson: Boolean(raw.dueFromLesson),
+    lessonId: typeof raw.lessonId === 'string' ? raw.lessonId : null,
+    attachments: Array.isArray(raw.attachments) ? raw.attachments.map(normalizeAttachment).filter(Boolean) : [],
+    solution: normalizeSolution(raw.solution),
     createdAt,
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : createdAt,
   };

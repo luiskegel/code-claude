@@ -19,8 +19,10 @@ const TIMEOUT_MS = 30000;
  */
 export async function requestAiAnswer(payload) {
   const question = String(payload.question ?? '').trim();
-  if (!question) {
-    throw new AiError('Bitte gib zuerst eine Aufgabe ein.');
+  const images = Array.isArray(payload.images) ? payload.images : [];
+
+  if (!question && !images.length) {
+    throw new AiError('Bitte gib zuerst eine Aufgabe ein oder hänge ein Foto an.');
   }
   if (question.length > 4000) {
     throw new AiError('Die Aufgabe ist zu lang (maximal 4000 Zeichen).');
@@ -33,7 +35,7 @@ export async function requestAiAnswer(payload) {
     const response = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, question }),
+      body: JSON.stringify({ ...payload, question, images }),
       signal: controller.signal,
     });
 
@@ -95,6 +97,7 @@ export class AiError extends Error {
 function serverErrorMessage(status, data) {
   if (data?.message) return data.message;
   if (status === 400) return 'Die Anfrage war unvollständig. Bitte prüfe deine Eingabe.';
+  if (status === 413) return 'Die angehängten Fotos sind zusammen zu gross. Nimm weniger oder kleinere Bilder.';
   if (status === 429) return 'Zu viele Anfragen in kurzer Zeit. Warte einen Moment und versuch es erneut.';
   if (status === 502) return 'Der KI-Anbieter ist gerade nicht erreichbar. Bitte später erneut versuchen.';
   if (status >= 500) return 'Auf dem Server ist ein Fehler aufgetreten. Bitte später erneut versuchen.';

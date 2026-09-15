@@ -24,9 +24,9 @@ export async function askAnthropic(payload, { apiKey, model }) {
       },
       body: JSON.stringify({
         model,
-        max_tokens: 1400,
+        max_tokens: 2000,
         system: buildSystemPrompt(payload.mode),
-        messages: [{ role: 'user', content: buildUserPrompt(payload) }],
+        messages: [{ role: 'user', content: buildMessageContent(payload) }],
       }),
       signal: controller.signal,
     });
@@ -55,6 +55,23 @@ export async function askAnthropic(payload, { apiKey, model }) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/**
+ * Baut den Nachrichten-Inhalt. Fotos der Aufgabe werden als Bild-Blöcke
+ * vorangestellt, damit das Modell sie beim Lesen der Aufgabe vor sich hat.
+ */
+function buildMessageContent(payload) {
+  const images = Array.isArray(payload.images) ? payload.images : [];
+  if (!images.length) return buildUserPrompt(payload);
+
+  return [
+    ...images.map((image) => ({
+      type: 'image',
+      source: { type: 'base64', media_type: image.mediaType, data: image.data },
+    })),
+    { type: 'text', text: buildUserPrompt(payload) },
+  ];
 }
 
 export class ProviderError extends Error {

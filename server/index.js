@@ -30,7 +30,10 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
 };
 
-const MAX_BODY_BYTES = 64 * 1024;
+// Fotos von Aufgaben werden mitgeschickt – daher deutlich grösser als reiner Text.
+const MAX_BODY_BYTES = 12 * 1024 * 1024;
+const MAX_IMAGES = 4;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const rateLimitBuckets = new Map();
 
 const server = createServer(async (request, response) => {
@@ -90,8 +93,10 @@ async function handleAiRequest(request, response) {
   const subject = String(payload?.subject ?? '').trim().slice(0, 80);
   const taskTitle = String(payload?.taskTitle ?? '').trim().slice(0, 200);
 
-  if (!question) {
-    return sendJson(response, 400, { message: 'Es wurde keine Aufgabe übermittelt.' });
+  const images = sanitizeImages(payload?.images);
+
+  if (!question && !images.length) {
+    return sendJson(response, 400, { message: 'Es wurde weder eine Aufgabe noch ein Foto übermittelt.' });
   }
   if (question.length > config.maxQuestionLength) {
     return sendJson(response, 400, {
@@ -99,7 +104,7 @@ async function handleAiRequest(request, response) {
     });
   }
 
-  const request_ = { mode, question, userSolution, subject, taskTitle };
+  const request_ = { mode, question, userSolution, subject, taskTitle, images };
 
   if (config.provider === 'anthropic') {
     try {
@@ -121,6 +126,23 @@ async function handleAiRequest(request, response) {
     mode,
     notice: 'Demo-Modus: Es ist kein KI-Schlüssel hinterlegt (siehe README).',
   });
+}
+
+/** Nur erlaubte Bildtypen in vernünftiger Anzahl und Grösse an den Anbieter geben. */
+function sanitizeImages(raw) {
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .filter(
+      (image) =>
+        image &&
+        typeof image.data === 'string' &&
+        image.data.length > 0 &&
+        image.data.length < 8 * 1024 * 1024 &&
+        ALLOWED_IMAGE_TYPES.includes(String(image.mediaType).toLowerCase()),
+    )
+    .slice(0, MAX_IMAGES)
+    .map((image) => ({ mediaType: String(image.mediaType).toLowerCase(), data: image.data }));
 }
 
 /* ---------------- Statische Dateien ---------------- */
