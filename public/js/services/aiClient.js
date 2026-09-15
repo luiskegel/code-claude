@@ -39,12 +39,14 @@ export async function requestAiAnswer(payload) {
 
     const data = await response.json().catch(() => null);
 
-    if (!response.ok) {
+    // Eine echte Fehlermeldung des eigenen Backends wird angezeigt …
+    if (!response.ok && data?.message) {
       throw new AiError(serverErrorMessage(response.status, data));
     }
-    if (!data?.content) {
-      throw new AiError('Die Antwort des Servers war unvollständig. Bitte versuch es erneut.');
-    }
+
+    // … antwortet dagegen gar kein Backend (statisches Hosting liefert dann
+    // z.B. die index.html oder einen 404 ohne JSON), übernimmt der Demo-Tutor.
+    if (!data?.content) return localFallback(payload);
 
     return { content: data.content, provider: data.provider ?? 'unbekannt', notice: data.notice };
   } catch (error) {
@@ -54,13 +56,8 @@ export async function requestAiAnswer(payload) {
       throw new AiError('Die KI hat zu lange gebraucht (Zeitüberschreitung). Bitte versuch es noch einmal.');
     }
 
-    // Kein erreichbares Backend -> Demo-Tutor im Browser.
-    const fallback = generateMockAnswer(payload);
-    return {
-      content: fallback.content,
-      provider: 'mock',
-      notice: 'Kein Server erreichbar – Antwort kommt vom lokalen Demo-Tutor.',
-    };
+    // Netzwerkfehler -> Demo-Tutor im Browser.
+    return localFallback(payload);
   } finally {
     clearTimeout(timeout);
   }
@@ -76,6 +73,16 @@ export async function fetchAiStatus() {
   } catch {
     return { provider: 'mock', configured: false, model: null, offline: true };
   }
+}
+
+/** Antwort des lokalen Demo-Tutors, wenn kein Backend erreichbar ist. */
+function localFallback(payload) {
+  const fallback = generateMockAnswer(payload);
+  return {
+    content: fallback.content,
+    provider: 'mock',
+    notice: 'Ohne Server-Anbindung: Die Antwort kommt vom lokalen Demo-Tutor im Browser.',
+  };
 }
 
 export class AiError extends Error {

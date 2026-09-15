@@ -33,9 +33,15 @@ const elements = {
 const media = window.matchMedia('(prefers-color-scheme: dark)');
 let storageWarningShown = false;
 
+// Manche Host-Umgebungen (z.B. eingebettete Vorschauen) setzen vorab ein
+// data-theme auf <html>. Das gilt als Systemvorgabe, solange der Benutzer
+// im Kopfbereich nichts anderes gewählt hat.
+const hostTheme = document.documentElement.dataset.theme;
+
 function effectiveTheme() {
   const theme = getState().settings.theme;
   if (theme === 'light' || theme === 'dark') return theme;
+  if (hostTheme === 'light' || hostTheme === 'dark') return hostTheme;
   return media.matches ? 'dark' : 'light';
 }
 
