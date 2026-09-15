@@ -370,6 +370,17 @@
   color: var(--success);
 }
 
+.sync-badge {
+  cursor: default;
+}
+
+@media (max-width: 520px) {
+  /* Auf sehr schmalen Displays zählt der Platz für den App-Namen. */
+  .sync-badge {
+    display: none;
+  }
+}
+
 .chip-row {
   display: flex;
   gap: var(--space-2);

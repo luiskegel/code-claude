@@ -4,7 +4,8 @@
  * jede Änderung schreibt automatisch in den localStorage und benachrichtigt die Views.
  */
 
-import { loadRawState, saveRawState, isStorageAvailable } from '../data/storage.js';
+import { isStorageAvailable } from '../data/storage.js';
+import { connectCloud, loadLocalState, persist } from '../data/persistence.js';
 import {
   DEFAULT_SUBJECTS,
   SUBJECT_COLORS,
@@ -39,8 +40,33 @@ const state = {
 
 /* ---------------- Initialisierung ---------------- */
 
+let changedSinceStart = false;
+
 export function initStore() {
-  const raw = loadRawState();
+  applyRawState(loadLocalState());
+  state.storageOk = isStorageAvailable();
+}
+
+/**
+ * Verbindet mit dem Server-Speicher der Plattform. Liegt dort ein Stand,
+ * ersetzt er den lokalen – so sind die Aufgaben nach dem Schliessen der App
+ * und auf anderen Geräten wieder da.
+ */
+export async function connectPersistence() {
+  const remote = await connectCloud({
+    hasLocalChanges: () => changedSinceStart,
+    getState: () => state,
+  });
+
+  if (remote) {
+    applyRawState(remote);
+    // Der Serverstand gilt jetzt als gespeichert – kein erneutes Hochladen.
+    for (const listener of listeners) listener(state);
+  }
+  return remote;
+}
+
+function applyRawState(raw) {
 
   const subjects = Array.isArray(raw?.subjects)
     ? raw.subjects.map(normalizeSubject).filter(Boolean)
@@ -57,7 +83,6 @@ export function initStore() {
   const theme = raw?.settings?.theme;
   state.settings.theme = ['light', 'dark', 'system'].includes(theme) ? theme : 'system';
   state.settings.autoDueFromSchedule = raw?.settings?.autoDueFromSchedule !== false;
-  state.storageOk = isStorageAvailable();
 
   // Fächer aus Aufgaben und Stundenplan ergänzen, falls sie fehlen.
   for (const name of [...state.tasks.map((task) => task.subject), ...scheduleSubjects(state.schedule)]) {
@@ -76,14 +101,10 @@ export function subscribe(listener) {
   return () => listeners.delete(listener);
 }
 
-function commit({ persist = true } = {}) {
-  if (persist) {
-    const ok = saveRawState({
-      tasks: state.tasks,
-      subjects: state.subjects,
-      schedule: state.schedule,
-      settings: state.settings,
-    });
+function commit({ store = true } = {}) {
+  if (store) {
+    changedSinceStart = true;
+    const ok = persist(state);
     if (!ok && state.storageOk) state.storageOk = false;
   }
   for (const listener of listeners) listener(state);
@@ -95,17 +116,17 @@ export function setView(view, options = {}) {
   state.ui.view = view;
   if (options.filter) state.ui.filter = options.filter;
   if (options.aiTaskId !== undefined) state.ui.aiTaskId = options.aiTaskId;
-  commit({ persist: false });
+  commit({ store: false });
 }
 
 export function setFilter(filter) {
   state.ui.filter = filter;
-  commit({ persist: false });
+  commit({ store: false });
 }
 
 export function setWeekOffset(offset) {
   state.ui.weekOffset = offset;
-  commit({ persist: false });
+  commit({ store: false });
 }
 
 export function setTheme(theme) {

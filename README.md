@@ -209,8 +209,26 @@ Styling (`styles/`).
 
 ## Datenspeicherung
 
-Aufgaben, Fächer, Stundenplan und Einstellungen liegen im `localStorage` unter dem
-Schlüssel `shm:data:v1`; die Anhänge selbst in der IndexedDB-Datenbank `shm-attachments`:
+Die Persistenz läuft zweistufig (`data/persistence.js`):
+
+1. **Server-Speicher der Plattform**, wenn die App als Artifact auf claude.ai läuft:
+   Aufgaben als je ein Dokument unter `tasks/<id>`, Fächer/Stundenplan/Einstellungen
+   unter `meta/app` (`db`-Capability), Fotos über die `assets`-Capability. Diese Daten
+   überleben das Schliessen der App und sind auf jedem Gerät verfügbar.
+2. **Lokal** als sofort verfügbarer Zwischenspeicher und als Rückfallebene ohne
+   Plattform: `localStorage` unter `shm:data:v1`, Anhänge in der IndexedDB-Datenbank
+   `shm-attachments`.
+
+Beim Start zeigt die App sofort den lokalen Stand und fragt parallel den Server. Liegt
+dort etwas, ersetzt es den lokalen Stand; ist der Server leer, wandert der lokale Stand
+hoch. Der Kopfbereich zeigt an, welcher Speicher aktiv ist („☁️ Gespeichert" bzw.
+„💾 Dieses Gerät").
+
+Hintergrund: In eingebetteten Ansichten (claude.ai) und auf iOS mit striktem
+Tracking-Schutz verwerfen Browser den Speicher einer eingebetteten Seite beim Schliessen –
+ohne den Server-Speicher wären die Aufgaben dann weg.
+
+Aufbau der lokalen Ablage:
 
 ```jsonc
 {

@@ -6,7 +6,7 @@ import {
   MAX_ATTACHMENTS,
   formatFileSize,
   getAttachmentUrl,
-  deleteAttachmentBlob,
+  removeAttachment,
   isAttachmentStorageAvailable,
   storeFile,
 } from '../data/attachments.js';
@@ -49,7 +49,7 @@ export function attachmentField({ initial = [], onChange = () => {}, id = create
             attachmentThumb(attachment, {
               onRemove: () => {
                 attachments = attachments.filter((entry) => entry.id !== attachment.id);
-                deleteAttachmentBlob(attachment.id);
+                removeAttachment(attachment);
                 refresh();
                 onChange(attachments);
               },
@@ -107,13 +107,16 @@ export function attachmentThumb(attachment, { onRemove = null } = {}) {
   const preview = el('div', { class: 'attachment-preview' });
 
   if (attachment.isImage) {
-    getAttachmentUrl(attachment.id).then((url) => {
-      if (!url) {
-        render(preview, el('span', { text: '🖼️' }));
+    getAttachmentUrl(attachment).then((source) => {
+      if (!source) {
+        render(preview, el('span', { text: '🖼️', title: 'Bild nicht mehr verfügbar' }));
         return;
       }
-      const image = el('img', { src: url, alt: attachment.name, loading: 'lazy' });
-      image.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+      const image = el('img', { src: source.url, alt: attachment.name, loading: 'lazy' });
+      if (source.revoke) {
+        image.addEventListener('load', () => URL.revokeObjectURL(source.url), { once: true });
+      }
+      image.addEventListener('error', () => render(preview, el('span', { text: '🖼️' })), { once: true });
       render(preview, image);
     });
   } else {
@@ -153,23 +156,26 @@ export function attachmentThumb(attachment, { onRemove = null } = {}) {
 
 /** Zeigt einen Anhang gross an. */
 export async function openAttachmentViewer(attachment) {
-  const url = await getAttachmentUrl(attachment.id);
+  const source = await getAttachmentUrl(attachment);
 
-  if (!url) {
+  if (!source) {
     showToast('Dieser Anhang ist nicht mehr vorhanden.', { tone: 'error' });
     return;
   }
 
   const body = attachment.isImage
-    ? el('img', { src: url, alt: attachment.name, class: 'attachment-full' })
+    ? el('img', { src: source.url, alt: attachment.name, class: 'attachment-full' })
     : el('div', { class: 'stack' }, [
         el('p', { text: attachment.name }),
         el('p', { class: 'muted', text: 'Dieser Dateityp kann hier nicht angezeigt werden.' }),
+        el('a', { href: source.url, target: '_blank', rel: 'noopener', text: 'In neuem Tab öffnen' }),
       ]);
 
   openDialog({
     title: attachment.name,
     body,
-    onClose: () => URL.revokeObjectURL(url),
+    onClose: () => {
+      if (source.revoke) URL.revokeObjectURL(source.url);
+    },
   });
 }

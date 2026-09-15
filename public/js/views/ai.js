@@ -105,7 +105,7 @@ export function aiView() {
 
     const images = [];
     for (const attachment of sources.slice(0, 4)) {
-      const image = await getAttachmentBase64(attachment.id);
+      const image = await getAttachmentBase64(attachment);
       if (image) images.push(image);
     }
     return images;

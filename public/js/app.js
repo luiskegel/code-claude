@@ -5,12 +5,13 @@
  */
 
 import { el, icon, render } from './lib/dom.js';
-import { getState, initStore, setView, subscribe } from './state/store.js';
+import { connectPersistence, getState, initStore, setView, subscribe } from './state/store.js';
 import { renderHeader } from './components/header.js';
 import { renderNav } from './components/nav.js';
 import { openTaskDialog } from './components/taskForm.js';
 import { showToast } from './components/toast.js';
 import { cleanupOrphanAttachments } from './data/attachments.js';
+import { onSyncChange } from './data/persistence.js';
 import { dashboardView } from './views/dashboard.js';
 import { tasksView } from './views/tasks.js';
 import { calendarView } from './views/calendar.js';
@@ -142,17 +143,23 @@ function start() {
   setupShortcuts();
 
   subscribe(renderApp);
+  onSyncChange(() => renderApp());
   media.addEventListener('change', () => {
     if (getState().settings.theme === 'system') renderApp();
   });
 
   renderApp();
 
-  // Bilder gelöschter Aufgaben liegen sonst für immer in IndexedDB.
-  const usedAttachmentIds = new Set(
-    getState().tasks.flatMap((task) => (task.attachments ?? []).map((attachment) => attachment.id)),
-  );
-  cleanupOrphanAttachments(usedAttachmentIds);
+  // Dauerhaften Speicher verbinden; danach aufräumen, damit Bilder von
+  // Aufgaben, die es serverseitig noch gibt, nicht verloren gehen.
+  connectPersistence()
+    .catch((error) => console.warn('Verbindung zum Speicher fehlgeschlagen:', error))
+    .finally(() => {
+      const usedAttachmentIds = new Set(
+        getState().tasks.flatMap((task) => (task.attachments ?? []).map((attachment) => attachment.id)),
+      );
+      cleanupOrphanAttachments(usedAttachmentIds);
+    });
 
   // Status des KI-Backends nachladen und Anzeige aktualisieren.
   loadAiStatus()

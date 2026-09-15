@@ -8,6 +8,7 @@
  */
 
 import { createId } from '../lib/id.js';
+import { assetUrl, getCloudAssets } from './cloud.js';
 
 const DB_NAME = 'shm-attachments';
 const STORE = 'files';
@@ -88,20 +89,57 @@ export async function deleteAttachmentBlob(id) {
   }
 }
 
-/** Liefert eine anzeigbare URL. Der Aufrufer gibt sie mit revokeObjectURL wieder frei. */
-export async function getAttachmentUrl(id) {
-  const blob = await getAttachmentBlob(id);
-  return blob ? URL.createObjectURL(blob) : null;
+/** Entfernt einen Anhang überall – lokal und im Server-Speicher. */
+export async function removeAttachment(attachment) {
+  await deleteAttachmentBlob(attachment?.id ?? attachment);
+
+  if (attachment?.assetId) {
+    const assets = await getCloudAssets();
+    try {
+      await assets?.delete(attachment.assetId);
+    } catch (error) {
+      console.warn('Foto konnte im Server-Speicher nicht gelöscht werden:', error);
+    }
+  }
+}
+
+/**
+ * Anzeigbare URL eines Anhangs.
+ * @returns {Promise<{url: string, revoke: boolean}|null>} `revoke` sagt, ob der
+ * Aufrufer die URL nach Gebrauch mit revokeObjectURL freigeben muss.
+ */
+export async function getAttachmentUrl(attachment) {
+  // Aus dem Server-Speicher lässt sich direkt anzeigen.
+  if (attachment?.assetId) return { url: assetUrl(attachment.assetId), revoke: false };
+
+  const blob = await getAttachmentBlob(attachment?.id ?? attachment);
+  return blob ? { url: URL.createObjectURL(blob), revoke: true } : null;
 }
 
 /** Bild oder Dokument als Base64 – für die KI-Anfrage. */
-export async function getAttachmentBase64(id) {
-  const blob = await getAttachmentBlob(id);
+export async function getAttachmentBase64(attachment) {
+  const blob = await resolveBlob(attachment);
   if (!blob) return null;
 
   const dataUrl = await blobToDataUrl(blob);
   const [, data] = dataUrl.split(',');
   return { mediaType: blob.type || 'application/octet-stream', data };
+}
+
+/** Holt die Bytes – bevorzugt lokal, sonst aus dem Server-Speicher. */
+async function resolveBlob(attachment) {
+  const local = await getAttachmentBlob(attachment?.id ?? attachment);
+  if (local) return local;
+
+  if (attachment?.assetId) {
+    try {
+      const response = await fetch(assetUrl(attachment.assetId));
+      if (response.ok) return await response.blob();
+    } catch (error) {
+      console.warn('Anhang konnte nicht vom Server geladen werden:', error);
+    }
+  }
+  return null;
 }
 
 export function blobToDataUrl(blob) {
@@ -122,30 +160,67 @@ export function isImageType(type) {
  * @returns {Promise<{id, name, type, size, isImage}>}
  */
 export async function storeFile(file) {
-  if (!isAttachmentStorageAvailable()) {
-    throw new AttachmentError('Dieser Browser kann keine Anhänge speichern.');
-  }
   if (file.size > MAX_FILE_BYTES) {
     throw new AttachmentError(`„${file.name}" ist zu gross (maximal 15 MB).`);
   }
 
-  const id = createId('att');
   const prepared = isImageType(file.type) ? await shrinkImage(file) : file;
+  const meta = {
+    id: createId('att'),
+    name: String(file.name ?? 'Datei').slice(0, 120),
+    type: prepared.type || file.type || 'application/octet-stream',
+    size: prepared.size,
+    isImage: isImageType(prepared.type || file.type),
+    assetId: null,
+  };
+
+  // Erste Wahl: der Server-Speicher der Plattform – dort bleibt das Foto
+  // dauerhaft und ist auch auf anderen Geräten sichtbar.
+  const assets = await getCloudAssets();
+  if (assets) {
+    try {
+      const uploaded = await assets.upload(prepared, { type: meta.type });
+      meta.assetId = uploaded.id;
+      meta.size = uploaded.sizeBytes ?? meta.size;
+      // Zusätzlich lokal ablegen, damit das Bild auch offline sofort da ist.
+      putAttachmentBlob(meta.id, prepared).catch(() => {});
+      return meta;
+    } catch (error) {
+      console.warn('Upload in den Server-Speicher fehlgeschlagen:', error);
+      const message = uploadErrorMessage(error);
+      if (message) throw new AttachmentError(message);
+    }
+  }
+
+  // Zweite Wahl: IndexedDB im Browser.
+  if (!isAttachmentStorageAvailable()) {
+    throw new AttachmentError('Dieser Browser kann keine Anhänge speichern.');
+  }
 
   try {
-    await putAttachmentBlob(id, prepared);
+    await putAttachmentBlob(meta.id, prepared);
   } catch (error) {
     console.error('Anhang konnte nicht gespeichert werden:', error);
     throw new AttachmentError('Der Anhang konnte nicht gespeichert werden (Speicher voll?).');
   }
 
-  return {
-    id,
-    name: String(file.name ?? 'Datei').slice(0, 120),
-    type: prepared.type || file.type || 'application/octet-stream',
-    size: prepared.size,
-    isImage: isImageType(prepared.type || file.type),
-  };
+  return meta;
+}
+
+function uploadErrorMessage(error) {
+  switch (error?.code) {
+    case 'too_large':
+      return 'Das Foto ist zu gross für den Server-Speicher (maximal 20 MB).';
+    case 'unsupported_type':
+      return 'Dieses Dateiformat wird nicht unterstützt. Nutze ein Foto (JPG, PNG) oder ein PDF.';
+    case 'quota_or_state':
+      return 'Der Speicher dieser App ist voll. Lösche nicht mehr benötigte Fotos.';
+    case 'rate_limited':
+      return 'Zu viele Uploads kurz hintereinander. Bitte einen Moment warten.';
+    // Bei allen anderen Fehlern wird still auf den lokalen Speicher ausgewichen.
+    default:
+      return null;
+  }
 }
 
 /** Typen, die die KI direkt verarbeiten kann. Alles andere wird zu JPEG. */
@@ -240,6 +315,7 @@ export function normalizeAttachment(raw) {
     type: typeof raw.type === 'string' ? raw.type : 'application/octet-stream',
     size: Number.isFinite(Number(raw.size)) ? Number(raw.size) : 0,
     isImage: Boolean(raw.isImage),
+    assetId: typeof raw.assetId === 'string' ? raw.assetId : null,
   };
 }
 
