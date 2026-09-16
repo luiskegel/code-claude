@@ -21,19 +21,32 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script>
       // Theme vor dem ersten Paint setzen -> kein Flackern beim Laden.
+      // Reihenfolge: eigene Auswahl > Vorgabe der Umgebung > Systemeinstellung.
+      // Die Umgebungsvorgabe zählt, weil die Seite auch eingebettet laufen kann
+      // (z. B. als Artefakt), wo das Design dort schon gewählt wurde.
       (function () {
+        var root = document.documentElement
+        // Auch beim eingebetteten Betrieb soll die Sprache stimmen.
+        root.lang = 'de'
+        var host = root.dataset.theme
+        var stored = null
         try {
-          var stored = localStorage.getItem('ca:theme')
-          var mode =
-            stored === 'light' || stored === 'dark'
-              ? stored
-              : window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-          document.documentElement.dataset.theme = mode
+          stored = localStorage.getItem('ca:theme')
         } catch (e) {
-          document.documentElement.dataset.theme = 'light'
+          stored = null
         }
+        if (stored === 'light' || stored === 'dark') {
+          root.dataset.theme = stored
+          return
+        }
+        if (host === 'light' || host === 'dark') return
+        var dark = false
+        try {
+          dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } catch (e) {
+          dark = false
+        }
+        root.dataset.theme = dark ? 'dark' : 'light'
       })()
     </script>
   </head>

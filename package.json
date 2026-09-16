@@ -9,6 +9,7 @@
     "gen:meta": "node --experimental-strip-types scripts/generate-meta.mjs",
     "prebuild": "npm run gen:meta",
     "build": "vite build",
+    "build:artifact": "node scripts/build-artifact.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "check": "npm run gen:meta && npm run typecheck && npm run build && npm run test:content",

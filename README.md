@@ -122,6 +122,24 @@ auf `index.html` leiten. Dafür liegen bei: `public/_redirects` (Netlify),
 `vercel.json` (Vercel). Für andere Anbieter die entsprechende Rewrite-Regel
 setzen.
 
+### Als Claude-Artefakt
+
+```bash
+npm run build:artifact    # erzeugt dist-artifact/
+```
+
+Diese Fassung läuft ohne jede Server-Regel:
+
+- **relative Pfade** (`./assets/…`) statt absoluter,
+- **Adressen über die Raute** (`#/lernpfad` statt `/lernpfad`) – gesteuert über
+  `__HASH_ROUTER__` in `vite.config.ts`, umgeschaltet in `src/main.tsx`,
+- **`index.html` ohne Gerüst**: Die Artefakt-Umgebung liefert
+  `<!doctype>`, `<head>`, Zeichensatz und Viewport selbst, deshalb reduziert
+  `scripts/build-artifact.mjs` die Datei auf den reinen Seiteninhalt.
+
+Die Designwahl richtet sich dort nach der Umgebung: eigene Auswahl schlägt
+Vorgabe der Umgebung schlägt Systemeinstellung (siehe Skript in `index.html`).
+
 ---
 
 ## Hinweis zu den Inhalten
