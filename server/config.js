@@ -3,8 +3,8 @@
  *
  * Alle Geheimnisse kommen ausschliesslich aus Umgebungsvariablen bzw. aus einer
  * lokalen .env-Datei (die per .gitignore ausgeschlossen ist). Sie werden niemals
- * an den Browser ausgeliefert – /api/ai/status meldet nur, OB ein Schlüssel
- * vorhanden ist, nie den Schlüssel selbst.
+ * an den Browser ausgeliefert – /api/ai/status meldet nur, WELCHER Anbieter aktiv
+ * ist, nie den Schlüssel selbst.
  */
 
 import { readFileSync } from 'node:fs';
@@ -17,27 +17,75 @@ export const publicDir = resolve(projectRoot, 'public');
 
 loadDotEnv(resolve(projectRoot, '.env'));
 
-const apiKey = (process.env.ANTHROPIC_API_KEY ?? '').trim();
-const requestedProvider = (process.env.AI_PROVIDER ?? '').trim().toLowerCase();
+/** Unterstützte Anbieter mit ihren Schlüsseln und Standardmodellen. */
+const PROVIDERS = {
+  anthropic: {
+    label: 'Claude (Anthropic)',
+    envKey: 'ANTHROPIC_API_KEY',
+    defaultModel: 'claude-sonnet-5',
+  },
+  openai: {
+    label: 'ChatGPT (OpenAI)',
+    envKey: 'OPENAI_API_KEY',
+    defaultModel: 'gpt-4o',
+  },
+  gemini: {
+    label: 'Gemini (Google)',
+    envKey: 'GOOGLE_API_KEY',
+    defaultModel: 'gemini-2.0-flash',
+  },
+};
+
+const requested = (process.env.AI_PROVIDER ?? '').trim().toLowerCase();
+const provider = resolveProvider(requested);
 
 export const config = {
   port: Number(process.env.PORT ?? 3000),
   host: process.env.HOST ?? '0.0.0.0',
-  provider: resolveProvider(requestedProvider, apiKey),
-  apiKey,
-  model: (process.env.AI_MODEL ?? 'claude-sonnet-5').trim(),
+  provider,
+  providerLabel: PROVIDERS[provider]?.label ?? 'Demo-Tutor',
+  apiKey: provider === 'mock' ? '' : keyFor(provider),
+  model: modelFor(provider),
   maxQuestionLength: 4000,
   rateLimit: { windowMs: 60_000, max: 20 },
 };
 
-function resolveProvider(requested, key) {
-  if (requested === 'anthropic' && key) return 'anthropic';
-  if (requested === 'anthropic' && !key) {
-    console.warn('[Konfiguration] AI_PROVIDER=anthropic, aber ANTHROPIC_API_KEY fehlt – nutze den Demo-Modus.');
+export const availableProviders = Object.keys(PROVIDERS);
+
+function keyFor(name) {
+  return (process.env[PROVIDERS[name].envKey] ?? '').trim();
+}
+
+function modelFor(name) {
+  const override = (process.env.AI_MODEL ?? '').trim();
+  if (override) return override;
+  return PROVIDERS[name]?.defaultModel ?? '';
+}
+
+/**
+ * Wählt den Anbieter: ausdrücklich gesetzt, sonst der erste mit hinterlegtem
+ * Schlüssel. Ohne Schlüssel läuft der Demo-Tutor.
+ */
+function resolveProvider(name) {
+  if (name && !PROVIDERS[name] && name !== 'mock') {
+    console.warn(
+      `[Konfiguration] Unbekannter AI_PROVIDER "${name}". Möglich: ${Object.keys(PROVIDERS).join(', ')}, mock.`,
+    );
     return 'mock';
   }
-  if (!requested && key) return 'anthropic';
-  return 'mock';
+
+  if (name === 'mock') return 'mock';
+
+  if (name) {
+    if (keyFor(name)) return name;
+    console.warn(
+      `[Konfiguration] AI_PROVIDER=${name}, aber ${PROVIDERS[name].envKey} fehlt – nutze den Demo-Modus.`,
+    );
+    return 'mock';
+  }
+
+  const withKey = Object.keys(PROVIDERS).find((entry) => keyFor(entry));
+  return withKey ?? 'mock';
 }
 
 /** Sehr einfacher .env-Parser (KEY=VALUE, # als Kommentar). */

@@ -123,9 +123,15 @@ Die App sucht sich die beste verfügbare Quelle (`services/aiClient.js`):
    Antwort erscheint beim Schreiben (Streaming) und lässt sich abbrechen. Beim ersten
    Aufruf fragt claude.ai einmalig um Erlaubnis; die Anfragen zählen auf das
    Claude-Kontingent dieser Person.
-2. **Eigenes Backend** (`/api/ai`) – beim lokalen Betrieb mit `npm start`. Der Server
-   liest den API-Schlüssel aus der Umgebung; im Browser steht er nie.
+2. **Eigenes Backend** (`/api/ai`) – beim lokalen Betrieb mit `npm start`. Hier lässt
+   sich der Anbieter frei wählen: **ChatGPT (OpenAI)**, **Gemini (Google)** oder
+   **Claude (Anthropic)**. Der Server liest den API-Schlüssel aus der Umgebung; im
+   Browser steht er nie. Alle drei bekommen dieselben Tutor-Regeln und auch die Fotos.
 3. **Demo-Tutor** im Browser, wenn keins von beidem erreichbar ist.
+
+**Wichtig:** Stufe 1 gilt nur in der veröffentlichten App auf claude.ai. Dort sind
+Aufrufe an fremde Server (OpenAI, Google) durch die Sicherheitsrichtlinie der Plattform
+blockiert – ChatGPT oder Gemini lassen sich also nur über den eigenen Server nutzen.
 
 Da es bei `sample` keinen System-Prompt gibt, stehen die Tutor-Regeln am Anfang der
 Nachricht – die Modus-Texte in `services/aiModes.js` werden von allen drei Wegen
@@ -144,7 +150,13 @@ Browser  ──POST /api/ai──►  Node-Server  ──x-api-key──►  Cla
 (kennt den Schlüssel nie)   (liest process.env)
 ```
 
-### Lokal einrichten
+### Anbieter wählen und einrichten
+
+| Anbieter | Variable | Schlüssel erzeugen | Standardmodell |
+| --- | --- | --- | --- |
+| ChatGPT (OpenAI) | `OPENAI_API_KEY` | platform.openai.com/api-keys | `gpt-4o` |
+| Gemini (Google) | `GOOGLE_API_KEY` | aistudio.google.com/apikey | `gemini-2.0-flash` |
+| Claude (Anthropic) | `ANTHROPIC_API_KEY` | console.anthropic.com/settings/keys | `claude-sonnet-5` |
 
 1. Vorlage kopieren:
 
@@ -152,16 +164,27 @@ Browser  ──POST /api/ai──►  Node-Server  ──x-api-key──►  Cla
    cp .env.example .env
    ```
 
-2. `.env` ausfüllen:
+2. Einen Anbieter eintragen, zum Beispiel ChatGPT:
 
    ```dotenv
-   AI_PROVIDER=anthropic
-   ANTHROPIC_API_KEY=sk-ant-…      # dein echter Schlüssel
-   AI_MODEL=claude-sonnet-5
+   AI_PROVIDER=openai
+   OPENAI_API_KEY=sk-…        # dein eigener Schlüssel
+   # AI_MODEL=gpt-4o          # optional, sonst gilt das Standardmodell
    ```
 
-3. Server neu starten – beim Start wird der aktive Anbieter ausgegeben, und in der
-   KI-Ansicht wechselt der Hinweis von „Demo-Modus" auf den aktiven Anbieter.
+3. `npm start` – beim Start steht der aktive Anbieter in der Konsole, und in der
+   KI-Ansicht zeigt das Abzeichen oben rechts denselben Namen.
+
+Ohne `AI_PROVIDER` nimmt der Server den ersten Anbieter, für den ein Schlüssel gesetzt
+ist. Fehlt der Schlüssel zum gewählten Anbieter, sagt die Konsole das und die App läuft
+im Demo-Modus weiter.
+
+**Ein API-Schlüssel ist nicht dein Passwort.** Du erzeugst ihn selbst beim Anbieter und
+kannst ihn dort jederzeit widerrufen. Kontozugangsdaten (Benutzername, Passwort) werden
+für die Anbindung weder gebraucht noch unterstützt.
+
+**Kosten:** Die OpenAI-API wird getrennt vom ChatGPT-Abo abgerechnet; Google bietet für
+Gemini ein kostenloses Kontingent mit Tageslimit.
 
 `.env` steht in `.gitignore` und darf **nicht** committet werden. Gerät ein Schlüssel
 doch einmal in ein Repository, hilft nur eines: beim Anbieter widerrufen und einen neuen
@@ -217,7 +240,8 @@ public/                     alles, was der Browser sieht
 server/
 ├── index.js                HTTP-Server: statische Dateien + /api/ai
 ├── config.js               Umgebungsvariablen, .env-Parser
-└── providers/anthropic.js  Aufruf der Claude-API (einzige Stelle mit dem Schlüssel)
+└── providers/              anthropic.js · openai.js · gemini.js · errors.js
+                            (die einzigen Stellen, an denen ein Schlüssel verwendet wird)
 ```
 
 **Aufbau:** Der Zustand liegt komplett in `state/store.js`. Views lesen ihn und lösen

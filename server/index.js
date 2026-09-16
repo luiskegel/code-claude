@@ -13,7 +13,10 @@ import { stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 
 import { config, publicDir } from './config.js';
-import { askAnthropic, ProviderError } from './providers/anthropic.js';
+import { askAnthropic } from './providers/anthropic.js';
+import { askOpenAi } from './providers/openai.js';
+import { askGemini } from './providers/gemini.js';
+import { ProviderError } from './providers/errors.js';
 import { generateMockAnswer } from '../public/js/services/mockAi.js';
 import { MODE_IDS } from '../public/js/services/aiModes.js';
 
@@ -46,8 +49,9 @@ const server = createServer(async (request, response) => {
     if (url.pathname === '/api/ai/status') {
       return sendJson(response, 200, {
         provider: config.provider,
+        label: config.providerLabel,
         configured: config.provider !== 'mock',
-        model: config.provider === 'anthropic' ? config.model : null,
+        model: config.provider === 'mock' ? null : config.model,
       });
     }
     if (url.pathname === '/api/ai') {
@@ -106,10 +110,17 @@ async function handleAiRequest(request, response) {
 
   const request_ = { mode, question, userSolution, subject, taskTitle, images };
 
-  if (config.provider === 'anthropic') {
+  const ask = { anthropic: askAnthropic, openai: askOpenAi, gemini: askGemini }[config.provider];
+
+  if (ask) {
     try {
-      const result = await askAnthropic(request_, { apiKey: config.apiKey, model: config.model });
-      return sendJson(response, 200, { content: result.content, provider: 'anthropic', mode });
+      const result = await ask(request_, { apiKey: config.apiKey, model: config.model });
+      return sendJson(response, 200, {
+        content: result.content,
+        provider: config.provider,
+        label: config.providerLabel,
+        mode,
+      });
     } catch (error) {
       const status = error instanceof ProviderError ? error.status : 502;
       console.error('KI-Anbieter-Fehler:', error.message, error.details ?? '');
@@ -251,9 +262,9 @@ function sendText(response, status, text) {
 
 server.listen(config.port, config.host, () => {
   const mode =
-    config.provider === 'anthropic'
-      ? `KI-Anbieter: anthropic (${config.model})`
-      : 'KI-Anbieter: Demo-Modus (kein Schlüssel hinterlegt)';
+    config.provider === 'mock'
+      ? 'KI-Anbieter: Demo-Modus (kein Schlüssel hinterlegt)'
+      : `KI-Anbieter: ${config.providerLabel} – Modell ${config.model}`;
   console.log(`Smart Homework Manager läuft auf http://localhost:${config.port}`);
   console.log(mode);
 });

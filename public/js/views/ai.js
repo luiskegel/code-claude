@@ -438,7 +438,7 @@ function providerBadge() {
   const text = status.viaPlatform
     ? '✨ Claude beantwortet deine Aufgaben'
     : status.configured
-      ? `KI aktiv: ${status.provider}${status.model ? ` (${status.model})` : ''}`
+      ? `✨ ${status.label ?? status.provider}${status.model ? ` · ${status.model}` : ''}`
       : 'Demo-Modus – keine KI angebunden';
 
   return el('span', {

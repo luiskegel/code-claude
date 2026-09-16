@@ -78,7 +78,11 @@ async function requestFromBackend(payload, { signal } = {}) {
     // z.B. die index.html oder einen 404 ohne JSON), übernimmt der Demo-Tutor.
     if (!data?.content) return localFallback(payload, images);
 
-    return { content: data.content, provider: data.provider ?? 'unbekannt', notice: data.notice };
+    return {
+      content: data.content,
+      provider: data.label ?? data.provider ?? 'unbekannt',
+      notice: data.notice,
+    };
   } catch (error) {
     if (error instanceof AiError) throw error;
 
@@ -125,7 +129,12 @@ export async function fetchAiStatus() {
     const response = await fetch(STATUS_ENDPOINT, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('status not ok');
     const data = await response.json();
-    return { provider: data.provider ?? 'mock', configured: Boolean(data.configured), model: data.model ?? null };
+    return {
+      provider: data.provider ?? 'mock',
+      label: data.label ?? data.provider ?? 'KI',
+      configured: Boolean(data.configured),
+      model: data.model ?? null,
+    };
   } catch {
     return { provider: 'mock', configured: false, offline: true };
   }

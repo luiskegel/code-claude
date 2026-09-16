@@ -5,6 +5,7 @@
  */
 
 import { buildSystemPrompt, buildUserPrompt } from '../../public/js/services/aiModes.js';
+import { ProviderError } from './errors.js';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
@@ -72,15 +73,6 @@ function buildMessageContent(payload) {
     })),
     { type: 'text', text: buildUserPrompt(payload) },
   ];
-}
-
-export class ProviderError extends Error {
-  constructor(message, status = 502, details = '') {
-    super(message);
-    this.name = 'ProviderError';
-    this.status = status;
-    this.details = details;
-  }
 }
 
 function messageForStatus(status) {
