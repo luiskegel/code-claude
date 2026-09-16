@@ -126,6 +126,19 @@ export async function getAttachmentBase64(attachment) {
   return { mediaType: blob.type || 'application/octet-stream', data };
 }
 
+/**
+ * Die Bytes eines Anhangs als Datei – bevorzugt lokal, sonst vom Server.
+ * Wird gebraucht, um Fotos direkt an Claude zu schicken.
+ */
+export async function getAttachmentFile(attachment) {
+  const blob = await resolveBlob(attachment);
+  if (!blob) return null;
+
+  const name = attachment?.name ?? 'foto.jpg';
+  const type = blob.type || attachment?.type || 'image/jpeg';
+  return typeof File === 'function' ? new File([blob], name, { type }) : blob;
+}
+
 /** Holt die Bytes – bevorzugt lokal, sonst aus dem Server-Speicher. */
 async function resolveBlob(attachment) {
   const local = await getAttachmentBlob(attachment?.id ?? attachment);

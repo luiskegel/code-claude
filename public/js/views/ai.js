@@ -10,7 +10,7 @@ import { AI_MODES, getMode } from '../services/aiModes.js';
 import { AiError, fetchAiStatus, requestAiAnswer } from '../services/aiClient.js';
 import { getState, setView, toggleTaskCompleted, updateTask } from '../state/store.js';
 import { attachmentField, attachmentThumb } from '../components/attachments.js';
-import { getAttachmentBase64, isImageType } from '../data/attachments.js';
+import { isImageType } from '../data/attachments.js';
 import { describeNextLesson, nextLessonFor } from '../data/schedule.js';
 import { confirmDialog } from '../components/dialog.js';
 import { showToast } from '../components/toast.js';
@@ -29,6 +29,8 @@ const aiState = {
   loading: false,
   extraAttachments: [],
   savedFor: null,
+  streaming: false,
+  controller: null,
 };
 
 let status = { provider: 'mock', configured: false };
@@ -97,25 +99,15 @@ export function aiView() {
     },
   });
 
-  /** Fotos der Aufgabe und zusätzlich angehängte Bilder für die KI aufbereiten. */
-  async function collectImages() {
-    const sources = [...(linkedTask?.attachments ?? []), ...aiState.extraAttachments].filter((attachment) =>
-      isImageType(attachment.type),
-    );
-
-    const images = [];
-    for (const attachment of sources.slice(0, 4)) {
-      const image = await getAttachmentBase64(attachment);
-      if (image) images.push(image);
-    }
-    return images;
+  /** Fotos der Aufgabe und zusätzlich angehängte Bilder. */
+  function collectAttachments() {
+    return [...(linkedTask?.attachments ?? []), ...aiState.extraAttachments];
   }
 
   async function run(modeId) {
     aiState.mode = modeId;
 
-    const hasImages =
-      [...(linkedTask?.attachments ?? []), ...aiState.extraAttachments].some((a) => isImageType(a.type));
+    const hasImages = collectAttachments().some((entry) => isImageType(entry.type));
 
     if (!questionField.value.trim() && !hasImages) {
       aiState.error = 'Bitte gib zuerst eine Aufgabe ein, übernimm eine Hausaufgabe oder hänge ein Foto an.';
@@ -145,29 +137,50 @@ export function aiView() {
     aiState.loading = true;
     aiState.error = null;
     aiState.answer = null;
+    aiState.notice = null;
     refresh();
 
+    aiState.controller = new AbortController();
+
     try {
-      const images = await collectImages();
-      const result = await requestAiAnswer({
-        mode: modeId,
-        question: questionField.value.trim(),
-        userSolution: solutionField.value.trim(),
-        subject: linkedTask?.subject ?? '',
-        taskTitle: linkedTask?.title ?? '',
-        images,
-      });
+      const result = await requestAiAnswer(
+        {
+          mode: modeId,
+          question: questionField.value.trim(),
+          userSolution: solutionField.value.trim(),
+          subject: linkedTask?.subject ?? '',
+          taskTitle: linkedTask?.title ?? '',
+          attachments: collectAttachments(),
+        },
+        {
+          signal: aiState.controller.signal,
+          // Die Antwort erscheint, während sie geschrieben wird.
+          onText: ({ text }) => {
+            aiState.answer = text;
+            aiState.answerMode = modeId;
+            aiState.streaming = true;
+            renderAnswer(answerPanel, linkedTask, refresh);
+          },
+        },
+      );
+
       aiState.answer = result.content;
       aiState.answerMode = modeId;
       aiState.provider = result.provider;
       aiState.notice = result.notice ?? null;
       aiState.savedFor = null;
     } catch (error) {
-      aiState.error =
-        error instanceof AiError ? error.message : 'Unbekannter Fehler bei der KI-Anfrage. Bitte erneut versuchen.';
-      console.error('KI-Anfrage fehlgeschlagen:', error);
+      if (error?.code === 'cancelled') {
+        aiState.error = null;
+      } else {
+        aiState.error =
+          error instanceof AiError ? error.message : 'Unbekannter Fehler bei der KI-Anfrage. Bitte erneut versuchen.';
+        console.error('KI-Anfrage fehlgeschlagen:', error);
+      }
     } finally {
       aiState.loading = false;
+      aiState.streaming = false;
+      aiState.controller = null;
       refresh();
     }
   }
@@ -260,12 +273,24 @@ function renderModes(container, run) {
 }
 
 function renderAnswer(container, linkedTask, refresh) {
+  // Während die Antwort geschrieben wird, ist sie schon zu sehen.
   if (aiState.loading) {
     render(container, [
       el('div', { class: 'ai-loading' }, [
         el('span', { class: 'spinner' }),
-        `„${getMode(aiState.mode).name}" wird vorbereitet …`,
+        aiState.answer ? 'Claude schreibt …' : `„${getMode(aiState.mode).name}" wird vorbereitet …`,
+        el(
+          'button',
+          {
+            class: 'btn btn-ghost btn-sm',
+            type: 'button',
+            style: { marginLeft: 'auto' },
+            text: 'Abbrechen',
+            on: { click: () => aiState.controller?.abort() },
+          },
+        ),
       ]),
+      aiState.answer ? el('div', { class: 'ai-content' }, [renderMarkdown(aiState.answer)]) : null,
     ]);
     return;
   }
@@ -302,7 +327,7 @@ function renderAnswer(container, linkedTask, refresh) {
       el('span', { class: 'badge', text: `${mode.icon} ${mode.name}` }),
       aiState.provider === 'mock'
         ? el('span', { class: 'badge', data: { tone: 'today' }, text: 'Demo-Tutor' })
-        : el('span', { class: 'badge', data: { tone: 'done' }, text: `KI: ${aiState.provider}` }),
+        : el('span', { class: 'badge', data: { tone: 'done' }, text: `✨ ${aiState.provider}` }),
     ]),
     aiState.notice
       ? el('div', { class: 'alert', data: { tone: 'warning' } }, [el('span', { text: aiState.notice })])
@@ -410,14 +435,19 @@ function taskPicker(state, linkedTask, questionField) {
 }
 
 function providerBadge() {
-  const text = status.configured
-    ? `KI aktiv: ${status.provider}${status.model ? ` (${status.model})` : ''}`
-    : 'Demo-Modus – kein KI-Schlüssel hinterlegt';
+  const text = status.viaPlatform
+    ? '✨ Claude beantwortet deine Aufgaben'
+    : status.configured
+      ? `KI aktiv: ${status.provider}${status.model ? ` (${status.model})` : ''}`
+      : 'Demo-Modus – keine KI angebunden';
 
   return el('span', {
     class: 'badge',
     data: { tone: status.configured ? 'done' : 'today' },
     style: { marginLeft: 'auto' },
+    title: status.viaPlatform
+      ? 'Die Anfragen laufen über dein Claude-Konto. Beim ersten Mal fragt Claude um Erlaubnis.'
+      : undefined,
     text,
   });
 }

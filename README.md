@@ -18,7 +18,9 @@ npm start          # startet den Server auf http://localhost:3000
 Es ist kein `npm install` nötig – das Projekt hat keine Laufzeit-Abhängigkeiten
 (Node 18 oder neuer wird vorausgesetzt).
 
-Ohne hinterlegten API-Schlüssel startet die App automatisch im **Demo-Modus**: Ein
+Als Artifact auf claude.ai beantwortet **Claude selbst** die Aufgaben, ohne dass ein
+Schlüssel hinterlegt sein muss (siehe „KI-Anbindung in drei Stufen"). Lokal ohne
+hinterlegten API-Schlüssel startet die App im **Demo-Modus**: Ein
 lokaler Tutor beantwortet die Anfragen. Er rechnet quadratische Gleichungen, lineare
 Gleichungen und Ableitungen von Polynomen tatsächlich nach (inklusive Probe) und sagt bei
 allen anderen Aufgaben ehrlich, dass er sie nicht lösen kann, statt etwas zu erfinden.
@@ -111,6 +113,24 @@ Vor dem Speichern bestätigt man das Ergebnis im Formular.
 
 ---
 
+## KI-Anbindung in drei Stufen
+
+Die App sucht sich die beste verfügbare Quelle (`services/aiClient.js`):
+
+1. **Claude über die Plattform** – läuft die App als Artifact auf claude.ai, fragt sie
+   Claude über die `sample`-Capability, also über das Claude-Konto der Person, die die
+   App geöffnet hat. **Kein API-Schlüssel nötig**, Fotos werden direkt mitgeschickt, die
+   Antwort erscheint beim Schreiben (Streaming) und lässt sich abbrechen. Beim ersten
+   Aufruf fragt claude.ai einmalig um Erlaubnis; die Anfragen zählen auf das
+   Claude-Kontingent dieser Person.
+2. **Eigenes Backend** (`/api/ai`) – beim lokalen Betrieb mit `npm start`. Der Server
+   liest den API-Schlüssel aus der Umgebung; im Browser steht er nie.
+3. **Demo-Tutor** im Browser, wenn keins von beidem erreichbar ist.
+
+Da es bei `sample` keinen System-Prompt gibt, stehen die Tutor-Regeln am Anfang der
+Nachricht – die Modus-Texte in `services/aiModes.js` werden von allen drei Wegen
+gemeinsam genutzt.
+
 ## Wo der API-Schlüssel hingehört
 
 **Regel: Der Schlüssel darf niemals in HTML, CSS oder Browser-JavaScript stehen.**
@@ -191,7 +211,8 @@ public/                     alles, was der Browser sieht
     ├── components/         header · nav · taskCard · taskForm · quickAdd · dialog · toast
     │                       attachments (Fotos auswählen, anzeigen, entfernen)
     ├── views/              dashboard · tasks · schedule · calendar · ai · subjects
-    └── services/           aiModes.js · aiClient.js · mockAi.js
+    └── services/           aiClient.js (wählt die Quelle) · sampleAi.js (Claude über
+                            die Plattform) · aiModes.js (Modi + Regeln) · mockAi.js
 
 server/
 ├── index.js                HTTP-Server: statische Dateien + /api/ai

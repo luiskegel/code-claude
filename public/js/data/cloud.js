@@ -15,6 +15,7 @@ const CONNECT_TIMEOUT_MS = 6000;
 
 let dbPromise;
 let assetsPromise;
+let samplePromise;
 
 function useCapability(name) {
   const api = globalThis.claude;
@@ -41,7 +42,16 @@ export function getCloudAssets() {
   return assetsPromise;
 }
 
-/** Zeigt an, ob die App überhaupt in einer Umgebung mit Server-Speicher läuft. */
+/**
+ * Zugriff auf Claude selbst – ohne eigenen API-Schlüssel, über das
+ * Claude-Konto der Person, die die App geöffnet hat.
+ */
+export function getCloudSample() {
+  if (!samplePromise) samplePromise = useCapability('sample');
+  return samplePromise;
+}
+
+/** Zeigt an, ob die App in einer Umgebung mit Plattform-Diensten läuft. */
 export function cloudPossible() {
   return typeof globalThis.claude?.use === 'function';
 }
