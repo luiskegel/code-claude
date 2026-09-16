@@ -1,0 +1,168 @@
+/* ------------------------------------------------------------------------
+   Designsystem: Farben, Typografie, Abstände, Radien, Schatten.
+   Alle Werte als Token auf :root – Dark Mode überschreibt nur die Farben.
+   ------------------------------------------------------------------------ */
+
+:root {
+  /* Flächen */
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f5f3ef;
+  --surface-3: #eceae4;
+  --overlay: rgba(23, 20, 16, 0.4);
+
+  /* Text */
+  --text: #1a1714;
+  --text-muted: #5f584f;
+  --text-subtle: #8b8378;
+
+  /* Linien */
+  --border: #e3ded5;
+  --border-strong: #cec7ba;
+
+  /* Akzent */
+  --accent: #b4532a;
+  --accent-hover: #9a4423;
+  --accent-soft: #fbeee7;
+  --accent-border: #eccfbe;
+  --on-accent: #ffffff;
+
+  /* Semantisch */
+  --info: #2c5f8a;
+  --info-soft: #e8f1f8;
+  --info-border: #c3dcee;
+
+  --tip: #2f6b4f;
+  --tip-soft: #e8f4ee;
+  --tip-border: #bedfcd;
+
+  --warn: #8a6410;
+  --warn-soft: #fdf3dd;
+  --warn-border: #f0dcae;
+
+  --danger: #a33327;
+  --danger-soft: #fceceb;
+  --danger-border: #f2cdc9;
+
+  --success: #2f6b4f;
+  --success-soft: #e8f4ee;
+  --success-border: #bedfcd;
+
+  /* Code */
+  --code-bg: #f5f3ef;
+  --code-border: #e3ded5;
+  --code-text: #2b2621;
+  --syn-keyword: #9a4423;
+  --syn-string: #2f6b4f;
+  --syn-comment: #8b8378;
+  --syn-number: #2c5f8a;
+  --syn-fn: #6b4899;
+  --syn-punct: #6e675e;
+  --syn-add: #2f6b4f;
+  --syn-del: #a33327;
+
+  /* Typografie */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --step--1: clamp(0.82rem, 0.8rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --step-1: clamp(1.15rem, 1.1rem + 0.25vw, 1.3rem);
+  --step-2: clamp(1.35rem, 1.25rem + 0.5vw, 1.65rem);
+  --step-3: clamp(1.65rem, 1.45rem + 1vw, 2.2rem);
+  --step-4: clamp(2rem, 1.6rem + 2vw, 3rem);
+
+  /* Abstände */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+
+  /* Radien */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  /* Schatten */
+  --shadow-sm: 0 1px 2px rgba(26, 23, 20, 0.05);
+  --shadow-md: 0 2px 8px rgba(26, 23, 20, 0.07);
+  --shadow-lg: 0 12px 34px rgba(26, 23, 20, 0.13);
+
+  /* Layout */
+  --sidebar-w: 268px;
+  --toc-w: 220px;
+  --header-h: 60px;
+  --content-max: 760px;
+
+  --transition: 140ms cubic-bezier(0.2, 0, 0.2, 1);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #12100e;
+  --surface: #1a1714;
+  --surface-2: #221e1a;
+  --surface-3: #2c2723;
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --text: #f0ece6;
+  --text-muted: #b3aaa0;
+  --text-subtle: #8a8177;
+
+  --border: #322c27;
+  --border-strong: #463e37;
+
+  --accent: #e08256;
+  --accent-hover: #ef9268;
+  --accent-soft: #2a1d16;
+  --accent-border: #4b3225;
+  --on-accent: #1a1714;
+
+  --info: #7db3dc;
+  --info-soft: #17232c;
+  --info-border: #2a3d4c;
+
+  --tip: #7cc39c;
+  --tip-soft: #15251d;
+  --tip-border: #274034;
+
+  --warn: #d9b45f;
+  --warn-soft: #2a2213;
+  --warn-border: #473a20;
+
+  --danger: #e58a7e;
+  --danger-soft: #2b1816;
+  --danger-border: #4a2a26;
+
+  --success: #7cc39c;
+  --success-soft: #15251d;
+  --success-border: #274034;
+
+  --code-bg: #1e1a17;
+  --code-border: #322c27;
+  --code-text: #e4ded6;
+  --syn-keyword: #e08256;
+  --syn-string: #7cc39c;
+  --syn-comment: #857c72;
+  --syn-number: #7db3dc;
+  --syn-fn: #b79ae0;
+  --syn-punct: #9a9188;
+  --syn-add: #7cc39c;
+  --syn-del: #e58a7e;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}

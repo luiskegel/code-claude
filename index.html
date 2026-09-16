@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)" />
+    <title>Claude Academy – Claude lernen von 0 auf sicher</title>
+    <meta
+      name="description"
+      content="Lerne Claude Schritt für Schritt: verständlich erklärt, mit echten Beispielen, kopierbaren Prompts, Übungen und Quiz. Für komplette Anfänger."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Claude Academy – Claude lernen von 0 auf sicher" />
+    <meta
+      property="og:description"
+      content="Die interaktive Lernplattform für Claude: Grundlagen, Prompting, Dateien, Projekte, Claude Code und Profi-Themen."
+    />
+    <meta property="og:locale" content="de_DE" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Theme vor dem ersten Paint setzen -> kein Flackern beim Laden.
+      (function () {
+        try {
+          var stored = localStorage.getItem('ca:theme')
+          var mode =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          document.documentElement.dataset.theme = mode
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
