@@ -24,12 +24,58 @@ const SECTION_TITLE: Record<SectionKind, string> = {
   extra: 'Mehr dazu',
 }
 
+/**
+ * Abkürzungen ausschreiben.
+ *
+ * Sprachausgaben buchstabieren „z. B." als „zett bee". Ausgeschrieben klingt
+ * derselbe Satz sofort wie gesprochene Sprache statt wie vorgelesener Text.
+ */
+const ABBREVIATIONS: [RegExp, string][] = [
+  [/\bz\.\s?B\./g, 'zum Beispiel'],
+  [/\bd\.\s?h\./g, 'das heißt'],
+  [/\bu\.\s?a\./g, 'unter anderem'],
+  [/\bbzw\./g, 'beziehungsweise'],
+  [/\busw\./g, 'und so weiter'],
+  [/\betc\./g, 'und so weiter'],
+  [/\bggf\./g, 'gegebenenfalls'],
+  [/\bevtl\./g, 'eventuell'],
+  [/\bca\./g, 'circa'],
+  [/\binkl\./g, 'inklusive'],
+  [/\bexkl\./g, 'exklusive'],
+  [/\bvgl\./g, 'vergleiche'],
+  [/\bNr\./g, 'Nummer'],
+  [/\bAbs\./g, 'Absatz'],
+  [/\bzzgl\./g, 'zuzüglich'],
+  [/\bmax\.\s/g, 'maximal '],
+  [/\bmind\.\s/g, 'mindestens '],
+  [/\bs\.\s?o\./g, 'siehe oben'],
+  [/\bu\.\s?U\./g, 'unter Umständen'],
+]
+
+function humanize(input: string): string {
+  let text = input
+  for (const [pattern, replacement] of ABBREVIATIONS) {
+    text = text.replace(pattern, replacement)
+  }
+  return (
+    text
+      // Gedankenstriche werden von der Stimme überlesen – ein Komma gibt die
+      // Pause, die beim Lesen das Auge macht.
+      .replace(/\s+[–—]\s+/g, ', ')
+      .replace(/…/g, '.')
+      // „100 %" liest sich sonst als „100 Prozentzeichen".
+      .replace(/(\d)\s*%/g, '$1 Prozent')
+  )
+}
+
 /** Entfernt Auszeichnung und Zeichen, die gesprochen nur stören. */
 function clean(input: string | undefined): string {
   if (!input) return ''
-  return stripMd(
-    // Befehle und Code vorzulesen hilft niemandem – nur ankündigen.
-    input.replace(FENCE_RE, ' Codebeispiel. ')
+  return humanize(
+    stripMd(
+      // Befehle und Code vorzulesen hilft niemandem – nur ankündigen.
+      input.replace(FENCE_RE, ' Codebeispiel. ')
+    )
   )
     .replace(/[[\]]/g, '') // Platzhalter-Klammern
     .replace(/[→←↑↓✓✗✦⚠ℹ•▶◐◑◒◓◔◕]/g, ' ')

@@ -16,6 +16,7 @@ const load = (rel) => import(pathToFileURL(resolve(root, rel)).href)
 
 const { LESSON_ORDER } = await load('src/content/order.ts')
 const { lessonSpeech, sectionSpeech, glossarySpeech } = await load('src/lib/readable.ts')
+const { chunkText, scoreVoice } = await load('src/lib/speech.ts')
 const { PROMPTS, PROMPT_CATEGORIES } = await load('src/content/prompts.ts')
 const { GLOSSARY } = await load('src/content/glossary.ts')
 const { QUICKSTART, PLAN_30 } = await load('src/content/plans.ts')
@@ -214,6 +215,68 @@ for (const g of GLOSSARY) {
   if (text.length < 40) fail(`${where}: zu kurz`)
   for (const [needle, name] of SPEECH_FORBIDDEN) {
     if (text.includes(needle)) fail(`${where}: enthält ${name} ("${needle}")`)
+  }
+}
+
+/* Abkürzungen müssen ausgeschrieben sein – sonst buchstabiert die Stimme. */
+const UNSPOKEN = [
+  [/\bz\.\s?B\./, 'z. B.'],
+  [/\bd\.\s?h\./, 'd. h.'],
+  [/\bbzw\./, 'bzw.'],
+  [/\busw\./, 'usw.'],
+  [/\bca\./, 'ca.'],
+  [/\bggf\./, 'ggf.'],
+  [/\bevtl\./, 'evtl.'],
+  [/\binkl\./, 'inkl.'],
+  [/\bu\.\s?a\./, 'u. a.'],
+  [/\s[–—]\s/, 'Gedankenstrich'],
+  [/\d\s*%/, 'Prozentzeichen'],
+]
+
+for (const lesson of lessons) {
+  const text = lessonSpeech(lesson)
+  for (const [pattern, name] of UNSPOKEN) {
+    if (pattern.test(text)) {
+      fail(`Vorlesetext ${lesson.slug}: "${name}" wird nicht ausgeschrieben`)
+    }
+  }
+}
+
+/* -------------------------------------------- Sprachausgabe: Bausteine */
+
+{
+  const where = 'Sprachausgabe'
+  const chunks = chunkText('Erster Satz. Zweiter Satz! Dritter Satz?')
+  if (chunks.length === 0) fail(`${where}: chunkText liefert nichts`)
+  if (chunks.some((c) => typeof c.text !== 'string' || typeof c.pauseAfter !== 'number')) {
+    fail(`${where}: chunkText liefert unerwartete Form`)
+  }
+  if (chunks.map((c) => c.text).join(' ') !== 'Erster Satz. Zweiter Satz! Dritter Satz?') {
+    fail(`${where}: chunkText verliert oder verändert Text`)
+  }
+
+  // Überlange Sätze werden hart getrennt – dort darf keine Pause entstehen.
+  const long = chunkText('Wort '.repeat(120).trim())
+  if (long.length < 2) fail(`${where}: sehr langer Satz wird nicht geteilt`)
+  if (long.slice(0, -1).some((c) => c.pauseAfter !== 0)) {
+    fail(`${where}: Pause mitten im Satz`)
+  }
+
+  // Zwischen Sätzen soll eine Atempause stehen.
+  if (!chunkText('Ein Satz. Noch einer.', 12).every((c) => c.pauseAfter >= 0)) {
+    fail(`${where}: fehlerhafte Pausenangabe`)
+  }
+
+  // Stimmenbewertung: neuronale Stimmen müssen vor den alten liegen.
+  const natural = scoreVoice('Microsoft Katja Online (Natural)', 'urn:katja', false)
+  const compact = scoreVoice('Anna (Kompakt)', 'com.apple.voice.compact.de-DE.Anna', true)
+  const espeak = scoreVoice('deutsch', 'espeak:de', true)
+  const premium = scoreVoice('Petra (Premium)', 'com.apple.voice.premium.de-DE.Petra', true)
+
+  if (!(natural > premium && premium > compact && compact > espeak)) {
+    fail(
+      `${where}: Stimmen falsch bewertet (natural ${natural}, premium ${premium}, kompakt ${compact}, espeak ${espeak})`
+    )
   }
 }
 

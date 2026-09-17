@@ -236,8 +236,36 @@ if (!ttsSupported) {
   check('Leiste für die ganze Lektion vorhanden', (await page.locator('.readaloud--bar').count()) === 1)
   check(
     'Geschwindigkeit wählbar',
-    (await page.locator('.readaloud--bar select').count()) === 1
+    (await page.locator('select[aria-label="Lesegeschwindigkeit"]').count()) === 1
   )
+
+  // Die Stimmenauswahl gibt es nur, wenn das Gerät Stimmen mitbringt.
+  const voiceCount = await page.evaluate(
+    () => window.speechSynthesis.getVoices().filter((v) => v.lang?.startsWith('de')).length
+  )
+  const voicePicker = await page.locator('select[aria-label="Stimme auswählen"]').count()
+  check(
+    voiceCount > 0
+      ? 'Stimme wählbar'
+      : 'Ohne Stimmen auf dem Gerät wird keine leere Auswahl angezeigt',
+    voiceCount > 0 ? voicePicker === 1 : voicePicker === 0,
+    `deutsche Stimmen: ${voiceCount}`
+  )
+
+  if (voiceCount > 0) {
+    const options = await page
+      .locator('select[aria-label="Stimme auswählen"] option')
+      .allTextContents()
+    check(
+      'Stimmen sind nach Qualität beschriftet',
+      options.every((o) => /natürlich|hochwertig|standard|einfach/.test(o)),
+      options.slice(0, 3).join(' | ')
+    )
+    check(
+      'Hörprobe vorhanden',
+      (await page.getByRole('button', { name: 'Anhören' }).count()) === 1
+    )
+  }
 
   // Ob eine Stimme vorhanden ist, hängt vom System ab. Auf einem Rechner ohne
   // installierte Stimme muss die Seite das sagen, statt stumm zu bleiben.
