@@ -1,6 +1,8 @@
 import { Fragment, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
+export { stripMd } from './text'
+
 /**
  * Sehr kleiner Inline-Markdown-Renderer.
  *
@@ -154,16 +156,4 @@ export function MdBlock({ children, className }: { children: string; className?:
       })}
     </div>
   )
-}
-
-/** Entfernt Markdown-Zeichen – für Suchindex und Meta-Descriptions. */
-export function stripMd(input: string): string {
-  return input
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/\s+/g, ' ')
-    .trim()
 }

@@ -9,7 +9,7 @@ import { loadAllLessons } from '../content/loader'
 import { PROMPTS } from '../content/prompts'
 import { GLOSSARY } from '../content/glossary'
 import { QUICKSTART, PLAN_30 } from '../content/plans'
-import { stripMd } from './markdown'
+import { stripMd } from './text'
 import { slugifyTerm, type SearchDoc } from './search'
 import type { Block, Lesson } from '../content/types'
 

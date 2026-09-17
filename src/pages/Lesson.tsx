@@ -14,6 +14,8 @@ import { Layout } from '../components/Layout'
 import { Seo } from '../components/Seo'
 import { Blocks } from '../components/blocks'
 import { ExerciseCard, Quiz } from '../components/Quiz'
+import { ReadAloud } from '../components/ReadAloud'
+import { lessonSpeech, sectionSpeech } from '../lib/readable'
 import { Md, MdBlock, stripMd } from '../lib/markdown'
 import { markDone, markStarted, toggleFavorite, unmarkDone } from '../lib/storage'
 import { useAppState } from '../lib/useStore'
@@ -205,6 +207,15 @@ export default function LessonPage() {
               </span>
             )}
           </div>
+
+          {lesson && (
+            <ReadAloud
+              id={`${slug}:lesson`}
+              text={() => lessonSpeech(lesson)}
+              variant="bar"
+              label="Ganze Lektion vorlesen"
+            />
+          )}
         </header>
 
         {practiceSections.length > 0 && (
@@ -275,6 +286,10 @@ export default function LessonPage() {
                   {section.title ?? SECTION_TITLE[section.kind]}
                 </h2>
                 <Blocks blocks={section.blocks} />
+                <ReadAloud
+                  id={`${slug}:section:${i}`}
+                  text={() => sectionSpeech(section)}
+                />
               </section>
             ))}
 
@@ -288,6 +303,12 @@ export default function LessonPage() {
                     </li>
                   ))}
                 </ul>
+                <ReadAloud
+                  id={`${slug}:mistakes`}
+                  text={() =>
+                    ['Häufige Fehler.', ...(lesson.mistakes ?? [])].join(' ')
+                  }
+                />
               </section>
             )}
 
@@ -300,6 +321,7 @@ export default function LessonPage() {
                   </p>
                   <MdBlock>{lesson.proTip}</MdBlock>
                 </aside>
+                <ReadAloud id={`${slug}:pro`} text={() => lesson.proTip ?? ''} />
               </section>
             )}
 

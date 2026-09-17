@@ -103,6 +103,33 @@ export const IconSparkle = ({ size, className }: Props) => (
   </svg>
 )
 
+export const IconSpeaker = ({ size, className }: Props) => (
+  <svg {...base(size)} className={className}>
+    <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4Z" />
+    <path d="M15.8 9a4 4 0 0 1 0 6" />
+    <path d="M18.4 6.4a7.5 7.5 0 0 1 0 11.2" />
+  </svg>
+)
+
+export const IconStop = ({ size, className }: Props) => (
+  <svg {...base(size)} className={className}>
+    <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+export const IconPause = ({ size, className }: Props) => (
+  <svg {...base(size)} className={className}>
+    <rect x="7" y="5.5" width="3.4" height="13" rx="1.2" fill="currentColor" stroke="none" />
+    <rect x="13.6" y="5.5" width="3.4" height="13" rx="1.2" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+export const IconPlay = ({ size, className }: Props) => (
+  <svg {...base(size)} className={className}>
+    <path d="M8 5.5 18.5 12 8 18.5Z" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 export const IconTarget = ({ size, className }: Props) => (
   <svg {...base(size)} className={className}>
     <circle cx="12" cy="12" r="8.5" />

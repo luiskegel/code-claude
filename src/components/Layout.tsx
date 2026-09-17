@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { LESSONS, TRACKS, lessonsOfTrack } from '../content'
 import { getTheme, setTheme, type Theme } from '../lib/storage'
+import { stopSpeaking } from '../lib/speech'
 import { useAppState } from '../lib/useStore'
 import { SearchDialog } from './SearchDialog'
 import { IconMenu, IconMoon, IconSearch, IconSun } from './Icons'
@@ -259,9 +260,11 @@ export function Layout({
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // Beim Seitenwechsel: mobiles Menü schließen und nach oben scrollen.
+  // Beim Seitenwechsel: mobiles Menü schließen, nach oben scrollen und eine
+  // laufende Sprachausgabe beenden – sonst liest sie die alte Seite weiter.
   useEffect(() => {
     setMenuOpen(false)
+    stopSpeaking()
     if (!location.hash) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
   }, [location.pathname, location.hash])
 

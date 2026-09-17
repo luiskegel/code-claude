@@ -15,6 +15,7 @@ const lessonsDir = resolve(root, 'src/content/lessons')
 const load = (rel) => import(pathToFileURL(resolve(root, rel)).href)
 
 const { LESSON_ORDER } = await load('src/content/order.ts')
+const { lessonSpeech, sectionSpeech, glossarySpeech } = await load('src/lib/readable.ts')
 const { PROMPTS, PROMPT_CATEGORIES } = await load('src/content/prompts.ts')
 const { GLOSSARY } = await load('src/content/glossary.ts')
 const { QUICKSTART, PLAN_30 } = await load('src/content/plans.ts')
@@ -167,6 +168,52 @@ for (const lesson of lessons) {
     q.options.forEach((o, i) => {
       if (!o.explain?.trim()) fail(`${where}: Quizfrage ${qi + 1}, Option ${i + 1} ohne Erklärung`)
     })
+  }
+}
+
+/* ------------------------------------------------ Vorlesetext prüfen */
+
+/** Zeichen, die vorgelesen keinen Sinn ergeben oder auf Auszeichnungsreste hindeuten. */
+const SPEECH_FORBIDDEN = [
+  ['**', 'fette Auszeichnung'],
+  ['](', 'Link-Auszeichnung'],
+  ['`', 'Code-Auszeichnung'],
+  ['[', 'eckige Klammer'],
+  [']', 'eckige Klammer'],
+  ['→', 'Pfeil'],
+  ['✓', 'Haken'],
+  ['✗', 'Kreuz'],
+  ['✦', 'Sternchen'],
+]
+
+for (const lesson of lessons) {
+  const where = `Vorlesetext ${lesson.slug}`
+  const text = lessonSpeech(lesson)
+
+  if (!text || text.length < 200) {
+    fail(`${where}: zu kurz (${text.length} Zeichen) – vermutlich fehlt Inhalt`)
+  }
+  for (const [needle, name] of SPEECH_FORBIDDEN) {
+    if (text.includes(needle)) fail(`${where}: enthält ${name} ("${needle}")`)
+  }
+  if (/\n/.test(text)) fail(`${where}: enthält Zeilenumbrüche`)
+  if (/ {2}/.test(text)) fail(`${where}: enthält doppelte Leerzeichen`)
+
+  for (const [i, section] of lesson.sections.entries()) {
+    const part = sectionSpeech(section)
+    if (!part.trim()) fail(`${where}: Abschnitt ${i + 1} ergibt keinen Text`)
+    if (!text.includes(part.slice(0, 40))) {
+      fail(`${where}: Abschnitt ${i + 1} fehlt im Text der ganzen Lektion`)
+    }
+  }
+}
+
+for (const g of GLOSSARY) {
+  const text = glossarySpeech(g.term, g.short, g.simple, g.example)
+  const where = `Vorlesetext Glossar "${g.term}"`
+  if (text.length < 40) fail(`${where}: zu kurz`)
+  for (const [needle, name] of SPEECH_FORBIDDEN) {
+    if (text.includes(needle)) fail(`${where}: enthält ${name} ("${needle}")`)
   }
 }
 

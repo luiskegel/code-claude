@@ -215,6 +215,82 @@ check('Praxismodus zeigt Praxis-Abschnitt', await page.locator('#ausprobieren').
 await page.getByRole('tab', { name: 'Lernen' }).click()
 check('Zurück im Lernmodus', await page.locator('#was').isVisible())
 
+/* --------------------------------------------------------------- Vorlesen */
+
+section('Vorlesen')
+await goto('/lektion/erster-prompt')
+await page.waitForSelector('.lesson__section', { timeout: 5000 })
+
+const ttsSupported = await page.evaluate(
+  () => 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'
+)
+
+if (!ttsSupported) {
+  check(
+    'Ohne Sprachausgabe wird keine Schaltfläche angezeigt',
+    (await page.locator('.readaloud').count()) === 0
+  )
+} else {
+  const perSection = await page.locator('.lesson__section .readaloud__btn').count()
+  check('Jeder Abschnitt hat eine Vorlese-Schaltfläche', perSection >= 5, `gefunden: ${perSection}`)
+  check('Leiste für die ganze Lektion vorhanden', (await page.locator('.readaloud--bar').count()) === 1)
+  check(
+    'Geschwindigkeit wählbar',
+    (await page.locator('.readaloud--bar select').count()) === 1
+  )
+
+  // Ob eine Stimme vorhanden ist, hängt vom System ab. Auf einem Rechner ohne
+  // installierte Stimme muss die Seite das sagen, statt stumm zu bleiben.
+  const hasVoices = await page.evaluate(() => window.speechSynthesis.getVoices().length > 0)
+
+  await page.locator('.lesson__section .readaloud__btn').first().click()
+  await page.waitForTimeout(600)
+
+  const active = await page.locator('.readaloud__btn--active').count()
+  const hint = await page.locator('.readaloud__error').count()
+
+  check(
+    hasVoices
+      ? 'Klick startet das Vorlesen'
+      : 'Ohne installierte Stimme erscheint ein Hinweis statt Stille',
+    hasVoices ? active === 1 : hint === 1,
+    `aktiv: ${active}, Hinweis: ${hint}, Stimmen: ${hasVoices}`
+  )
+
+  if (hasVoices) {
+    check(
+      'Pause-Schaltfläche erscheint',
+      (await page.getByRole('button', { name: /pausieren/i }).count()) >= 1
+    )
+    await page.locator('.readaloud__btn--active').first().click()
+    await page.waitForTimeout(300)
+    check(
+      'Erneuter Klick beendet das Vorlesen',
+      (await page.locator('.readaloud__btn--active').count()) === 0
+    )
+
+    await page.locator('.lesson__section .readaloud__btn').first().click()
+    await page.waitForTimeout(300)
+    await goto('/glossar')
+    await page.waitForTimeout(400)
+    check(
+      'Seitenwechsel stoppt die Sprachausgabe',
+      (await page.evaluate(() => window.speechSynthesis.speaking)) === false
+    )
+  } else {
+    check(
+      'Der Hinweis nennt einen Lösungsweg',
+      /Stimme/i.test((await page.locator('.readaloud__error').first().textContent()) ?? '')
+    )
+    await goto('/glossar')
+  }
+
+  check(
+    'Glossareinträge haben eine Vorlese-Schaltfläche',
+    (await page.locator('.glossary__entry .readaloud__btn').count()) > 10
+  )
+}
+
 /* ------------------------------------------------------------ Copy-Buttons */
 
 section('Kopier-Schaltflächen')

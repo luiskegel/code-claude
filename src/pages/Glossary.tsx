@@ -4,6 +4,8 @@ import { GLOSSARY } from '../content/glossary'
 import { getLesson } from '../content'
 import { Layout } from '../components/Layout'
 import { Seo } from '../components/Seo'
+import { ReadAloud } from '../components/ReadAloud'
+import { glossarySpeech } from '../lib/readable'
 import { MdBlock } from '../lib/markdown'
 import { slugifyTerm } from '../lib/search'
 import { IconSearch } from '../components/Icons'
@@ -127,6 +129,13 @@ export default function Glossary() {
                     <MdBlock>{entry.example}</MdBlock>
                   </div>
                 )}
+
+                <ReadAloud
+                  id={`glossar:${entry.term}`}
+                  text={() =>
+                    glossarySpeech(entry.term, entry.short, entry.simple, entry.example)
+                  }
+                />
 
                 {(entry.seeAlso?.length || lesson) && (
                   <div className="glossary__block">
