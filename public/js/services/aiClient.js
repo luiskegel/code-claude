@@ -12,7 +12,7 @@
 import { generateMockAnswer } from './mockAi.js';
 import { askClaude, getSampleApi, SampleError } from './sampleAi.js';
 import { getAttachmentBase64 } from '../data/attachments.js';
-import { isImageType } from '../data/attachments.js';
+import { AI_IMAGE_TYPES, PDF_TYPE, describeSkipped, planAttachments } from './attachmentPlan.js';
 
 const ENDPOINT = '/api/ai';
 const STATUS_ENDPOINT = '/api/ai/status';
@@ -27,9 +27,9 @@ const TIMEOUT_MS = 60000;
 export async function requestAiAnswer(payload, options = {}) {
   const question = String(payload.question ?? '').trim();
   const attachments = Array.isArray(payload.attachments) ? payload.attachments : [];
-  const hasImages = attachments.some((entry) => isImageType(entry.type));
+  const hasAttachments = attachments.length > 0;
 
-  if (!question && !hasImages) {
+  if (!question && !hasAttachments) {
     throw new AiError('Bitte gib zuerst eine Aufgabe ein oder hänge ein Foto an.');
   }
   if (question.length > 4000) {
@@ -58,12 +58,19 @@ async function requestFromBackend(payload, { signal } = {}) {
   signal?.addEventListener('abort', () => controller.abort(), { once: true });
 
   try {
-    const images = await collectBase64Images(payload.attachments);
+    // Das eigene Backend kann bei Claude und Gemini auch PDFs weiterreichen.
+    const plan = planAttachments(payload.attachments, {
+      maxCount: 4,
+      imageTypes: AI_IMAGE_TYPES,
+      allowPdf: true,
+    });
+    const { images, documents, failed } = await loadAsBase64(plan);
+    const skippedText = describeSkipped(plan.skipped, failed);
 
     const response = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, attachments: undefined, images }),
+      body: JSON.stringify({ ...payload, attachments: undefined, images, documents }),
       signal: controller.signal,
     });
 
@@ -76,12 +83,12 @@ async function requestFromBackend(payload, { signal } = {}) {
 
     // … antwortet dagegen gar kein Backend (statisches Hosting liefert dann
     // z.B. die index.html oder einen 404 ohne JSON), übernimmt der Demo-Tutor.
-    if (!data?.content) return localFallback(payload, images);
+    if (!data?.content) return localFallback(payload, images, skippedText);
 
     return {
       content: data.content,
       provider: data.label ?? data.provider ?? 'unbekannt',
-      notice: data.notice,
+      notice: [data.notice, skippedText].filter(Boolean).join(' ') || undefined,
     };
   } catch (error) {
     if (error instanceof AiError) throw error;
@@ -92,30 +99,42 @@ async function requestFromBackend(payload, { signal } = {}) {
     }
 
     // Netzwerkfehler -> Demo-Tutor im Browser.
-    return localFallback(payload, []);
+    return localFallback(payload, [], null);
   } finally {
     clearTimeout(timeout);
   }
 }
 
-/** Fotos als Base64 – so erwartet es das eigene Backend. */
-async function collectBase64Images(attachments = []) {
+/** Anhänge als Base64 – so erwartet es das eigene Backend. */
+async function loadAsBase64(plan) {
   const images = [];
+  const documents = [];
+  const failed = [];
 
-  for (const attachment of attachments.filter((entry) => isImageType(entry.type)).slice(0, 4)) {
+  for (const attachment of plan.images) {
     const image = await getAttachmentBase64(attachment);
     if (image) images.push(image);
+    else failed.push(attachment.name);
   }
-  return images;
+
+  for (const attachment of plan.documents) {
+    const file = await getAttachmentBase64(attachment);
+    if (file) documents.push({ ...file, mediaType: PDF_TYPE, name: attachment.name });
+    else failed.push(attachment.name);
+  }
+
+  return { images, documents, failed };
 }
 
 /** Antwort des lokalen Demo-Tutors, wenn keine echte KI erreichbar ist. */
-function localFallback(payload, images) {
+function localFallback(payload, images, skippedText) {
   const fallback = generateMockAnswer({ ...payload, images });
   return {
     content: fallback.content,
     provider: 'mock',
-    notice: 'Ohne KI-Anbindung: Die Antwort kommt vom lokalen Demo-Tutor im Browser.',
+    notice: ['Ohne KI-Anbindung: Die Antwort kommt vom lokalen Demo-Tutor im Browser.', skippedText]
+      .filter(Boolean)
+      .join(' '),
   };
 }
 

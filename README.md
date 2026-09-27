@@ -51,8 +51,13 @@ allen anderen Aufgaben ehrlich, dass er sie nicht lösen kann, statt etwas zu er
   bis zu 6 Anhänge, Fotos werden vor dem Speichern auf 1600 px verkleinert
 - Die Bilder liegen in IndexedDB (nicht im localStorage, der dafür zu klein ist);
   im Aufgaben-Datensatz stehen nur Name, Typ und Grösse
-- In der KI-Ansicht werden die Fotos bei jeder Anfrage mitgeschickt: Der Server reicht
-  sie als Bild-Blöcke an die Claude-API weiter, die die Aufgabe daraus liest und löst
+- In der KI-Ansicht gehen die Anhänge bei jeder Anfrage mit. Was nicht mitkann, wird
+  **benannt** statt stillschweigend weggelassen – etwa ein PDF bei einem Anbieter, der
+  keine PDFs liest, ein überzähliger Anhang (vier pro Anfrage) oder eine Datei, die sich
+  nicht laden lässt
+- **PDFs** gehen direkt an Claude (document-Block) und Gemini (inline_data). ChatGPT und
+  Claude-über-die-Plattform lesen keine PDFs; dort erscheint der Hinweis, ein Foto zu
+  machen
 - **Ohne hinterlegten API-Schlüssel sagt der Demo-Tutor ausdrücklich, dass er das Foto
   nicht lesen kann** – er rät nicht
 - „Lösung bei der Aufgabe speichern" hängt die Antwort an die Hausaufgabe. Sie ist danach

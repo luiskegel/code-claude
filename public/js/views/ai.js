@@ -10,7 +10,6 @@ import { AI_MODES, getMode } from '../services/aiModes.js';
 import { AiError, fetchAiStatus, requestAiAnswer } from '../services/aiClient.js';
 import { getState, setView, toggleTaskCompleted, updateTask } from '../state/store.js';
 import { attachmentField, attachmentThumb } from '../components/attachments.js';
-import { isImageType } from '../data/attachments.js';
 import { describeNextLesson, nextLessonFor } from '../data/schedule.js';
 import { confirmDialog } from '../components/dialog.js';
 import { showToast } from '../components/toast.js';
@@ -107,9 +106,9 @@ export function aiView() {
   async function run(modeId) {
     aiState.mode = modeId;
 
-    const hasImages = collectAttachments().some((entry) => isImageType(entry.type));
+    const hasAttachments = collectAttachments().length > 0;
 
-    if (!questionField.value.trim() && !hasImages) {
+    if (!questionField.value.trim() && !hasAttachments) {
       aiState.error = 'Bitte gib zuerst eine Aufgabe ein, übernimm eine Hausaufgabe oder hänge ein Foto an.';
       refresh();
       questionField.focus();

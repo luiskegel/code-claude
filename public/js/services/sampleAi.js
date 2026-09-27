@@ -10,8 +10,9 @@
  */
 
 import { getCloudSample } from '../data/cloud.js';
-import { getAttachmentFile, isImageType } from '../data/attachments.js';
+import { getAttachmentFile } from '../data/attachments.js';
 import { buildSystemPrompt, buildUserPrompt } from './aiModes.js';
+import { AI_IMAGE_TYPES, describeSkipped, planAttachments } from './attachmentPlan.js';
 
 let limitsPromise = null;
 
@@ -36,7 +37,26 @@ export async function askClaude(payload, { onText, signal } = {}) {
   if (!sample) throw new SampleUnavailable();
 
   const limits = await getLimits(sample);
-  const images = limits?.images ? await collectImages(payload.attachments, limits.images) : [];
+
+  // Claude über die Plattform nimmt nur Bilder entgegen – PDFs müssen draussen
+  // bleiben, und das wird gesagt statt verschwiegen.
+  const plan = planAttachments(payload.attachments, {
+    maxCount: limits?.images?.maxCount ?? 4,
+    imageTypes: limits?.images?.mediaTypes ?? AI_IMAGE_TYPES,
+    allowPdf: false,
+  });
+
+  if (!limits?.images && plan.images.length) {
+    plan.skipped.push(
+      ...plan.images.map((entry) => ({
+        name: entry.name,
+        reason: 'diese Ansicht kann keine Bilder an Claude schicken',
+      })),
+    );
+    plan.images = [];
+  }
+
+  const { files: images, failed } = await loadFiles(plan.images, limits?.images);
 
   // Es gibt keinen System-Prompt: Die Regeln stehen am Anfang der Nachricht.
   const prompt = `${buildSystemPrompt(payload.mode)}\n\n---\n\n${buildUserPrompt({
@@ -52,38 +72,46 @@ export async function askClaude(payload, { onText, signal } = {}) {
       signal,
     });
 
-    const hadImages = Boolean(payload.attachments?.some((entry) => isImageType(entry.type)));
-
     return {
       content: result.text,
       provider: 'Claude',
-      notice: buildNotice({ truncated: result.truncated, hadImages, sentImages: images.length }),
+      notice: buildNotice({
+        truncated: result.truncated,
+        skippedText: describeSkipped(plan.skipped, failed),
+      }),
     };
   } catch (error) {
     throw new SampleError(messageFor(error), error?.code, error?.text);
   }
 }
 
-/** Fotos als Dateien laden – so viele, wie die Plattform zulässt. */
-async function collectImages(attachments = [], imageLimits) {
-  const candidates = attachments.filter((entry) => isImageType(entry.type));
+/** Lädt die Dateien; was dabei ausfällt, wird gemeldet statt übergangen. */
+async function loadFiles(attachments, imageLimits) {
   const files = [];
+  const failed = [];
 
-  for (const attachment of candidates.slice(0, imageLimits.maxCount ?? 4)) {
+  for (const attachment of attachments) {
     const blob = await getAttachmentFile(attachment);
-    if (!blob) continue;
-    if (imageLimits.maxInputBytes && blob.size > imageLimits.maxInputBytes) continue;
-    if (imageLimits.mediaTypes?.length && !imageLimits.mediaTypes.includes(blob.type)) continue;
+
+    if (!blob) {
+      failed.push(attachment.name);
+      continue;
+    }
+    if (imageLimits?.maxInputBytes && blob.size > imageLimits.maxInputBytes) {
+      failed.push(`${attachment.name} – zu gross`);
+      continue;
+    }
     files.push(blob);
   }
 
-  return files;
+  return { files, failed };
 }
 
-function buildNotice({ truncated, hadImages, sentImages }) {
-  if (truncated) return 'Die Antwort wurde gekürzt. Frag nach einem kleineren Teil der Aufgabe.';
-  if (hadImages && !sentImages) return 'Die Fotos konnten nicht mitgeschickt werden – die Antwort bezieht sich nur auf den Text.';
-  return null;
+function buildNotice({ truncated, skippedText }) {
+  const parts = [];
+  if (truncated) parts.push('Die Antwort wurde gekürzt. Frag nach einem kleineren Teil der Aufgabe.');
+  if (skippedText) parts.push(skippedText);
+  return parts.length ? parts.join(' ') : null;
 }
 
 function messageFor(error) {

@@ -67,10 +67,14 @@ export async function askGemini(payload, { apiKey, model }) {
 /** Fotos zuerst, danach der Text der Aufgabe. */
 function buildParts(payload) {
   const images = Array.isArray(payload.images) ? payload.images : [];
+  const documents = Array.isArray(payload.documents) ? payload.documents : [];
 
   return [
     ...images.map((image) => ({
       inline_data: { mime_type: image.mediaType, data: image.data },
+    })),
+    ...documents.map((doc) => ({
+      inline_data: { mime_type: doc.mediaType, data: doc.data },
     })),
     { text: buildUserPrompt(payload) },
   ];

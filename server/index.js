@@ -36,7 +36,12 @@ const MIME_TYPES = {
 // Fotos von Aufgaben werden mitgeschickt – daher deutlich grösser als reiner Text.
 const MAX_BODY_BYTES = 12 * 1024 * 1024;
 const MAX_IMAGES = 4;
+const MAX_DOCUMENTS = 2;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const PDF_TYPE = 'application/pdf';
+
+/** Welcher Anbieter kann PDFs direkt lesen? */
+const PDF_CAPABLE = new Set(['anthropic', 'gemini']);
 const rateLimitBuckets = new Map();
 
 const server = createServer(async (request, response) => {
@@ -98,9 +103,19 @@ async function handleAiRequest(request, response) {
   const taskTitle = String(payload?.taskTitle ?? '').trim().slice(0, 200);
 
   const images = sanitizeImages(payload?.images);
+  const allDocuments = sanitizeDocuments(payload?.documents);
 
-  if (!question && !images.length) {
-    return sendJson(response, 400, { message: 'Es wurde weder eine Aufgabe noch ein Foto übermittelt.' });
+  // PDFs nur an Anbieter geben, die sie lesen können – sonst ehrlich melden.
+  const documents = PDF_CAPABLE.has(config.provider) ? allDocuments : [];
+  const documentNotice =
+    allDocuments.length && !documents.length
+      ? `${config.providerLabel} kann PDFs nicht lesen. ${allDocuments.length === 1 ? 'Das PDF wurde' : 'Die PDFs wurden'} nicht mitgeschickt – mach ein Foto der Seite.`
+      : null;
+
+  if (!question && !images.length && !documents.length) {
+    return sendJson(response, 400, {
+      message: 'Es wurde weder eine Aufgabe noch ein lesbarer Anhang übermittelt.',
+    });
   }
   if (question.length > config.maxQuestionLength) {
     return sendJson(response, 400, {
@@ -108,7 +123,7 @@ async function handleAiRequest(request, response) {
     });
   }
 
-  const request_ = { mode, question, userSolution, subject, taskTitle, images };
+  const request_ = { mode, question, userSolution, subject, taskTitle, images, documents };
 
   const ask = { anthropic: askAnthropic, openai: askOpenAi, gemini: askGemini }[config.provider];
 
@@ -120,6 +135,7 @@ async function handleAiRequest(request, response) {
         provider: config.provider,
         label: config.providerLabel,
         mode,
+        notice: documentNotice ?? undefined,
       });
     } catch (error) {
       const status = error instanceof ProviderError ? error.status : 502;
@@ -135,7 +151,9 @@ async function handleAiRequest(request, response) {
     content: result.content,
     provider: 'mock',
     mode,
-    notice: 'Demo-Modus: Es ist kein KI-Schlüssel hinterlegt (siehe README).',
+    notice: ['Demo-Modus: Es ist kein KI-Schlüssel hinterlegt (siehe README).', documentNotice]
+      .filter(Boolean)
+      .join(' '),
   });
 }
 
@@ -154,6 +172,27 @@ function sanitizeImages(raw) {
     )
     .slice(0, MAX_IMAGES)
     .map((image) => ({ mediaType: String(image.mediaType).toLowerCase(), data: image.data }));
+}
+
+/** PDFs prüfen: Typ, Anzahl, Grösse. */
+function sanitizeDocuments(raw) {
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .filter(
+      (doc) =>
+        doc &&
+        typeof doc.data === 'string' &&
+        doc.data.length > 0 &&
+        doc.data.length < 8 * 1024 * 1024 &&
+        String(doc.mediaType).toLowerCase() === PDF_TYPE,
+    )
+    .slice(0, MAX_DOCUMENTS)
+    .map((doc) => ({
+      mediaType: PDF_TYPE,
+      data: doc.data,
+      name: typeof doc.name === 'string' ? doc.name.slice(0, 120) : 'dokument.pdf',
+    }));
 }
 
 /* ---------------- Statische Dateien ---------------- */

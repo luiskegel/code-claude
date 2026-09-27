@@ -68,19 +68,24 @@ export function buildSystemPrompt(modeId) {
 }
 
 /** Baut die Nutzernachricht aus Aufgabenkontext, Frage und optionaler eigener Lösung. */
-export function buildUserPrompt({ question, subject, taskTitle, userSolution, images = [] }) {
+export function buildUserPrompt({ question, subject, taskTitle, userSolution, images = [], documents = [] }) {
   const parts = [];
   if (subject) parts.push(`Fach: ${subject}`);
   if (taskTitle) parts.push(`Hausaufgabe: ${taskTitle}`);
 
-  if (images.length) {
+  const anhaenge = [];
+  if (images.length) anhaenge.push(images.length === 1 ? 'ein Foto' : `${images.length} Fotos`);
+  if (documents.length) anhaenge.push(documents.length === 1 ? 'ein PDF' : `${documents.length} PDFs`);
+
+  if (anhaenge.length) {
     parts.push(
-      `Oben ${images.length === 1 ? 'siehst du ein Foto' : `siehst du ${images.length} Fotos`} der Aufgabe. ` +
-        'Lies die Aufgabenstellung daraus ab. Ist etwas unleserlich, sage das ausdrücklich, statt zu raten.',
+      `Oben findest du ${anhaenge.join(' und ')} zur Aufgabe. ` +
+        'Lies die Aufgabenstellung daraus ab. Ist etwas unleserlich oder mehrdeutig, sage das ausdrücklich, ' +
+        'statt zu raten. Gehört mehr als eine Aufgabe dazu, beantworte sie der Reihe nach.',
     );
   }
 
-  parts.push(`Aufgabe:\n${question || '(siehe Foto)'}`);
+  parts.push(`Aufgabe:\n${question || '(siehe Anhang)'}`);
   if (userSolution) parts.push(`Meine eigene Lösung:\n${userSolution}`);
   return parts.join('\n\n');
 }

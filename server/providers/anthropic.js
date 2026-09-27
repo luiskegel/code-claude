@@ -64,12 +64,18 @@ export async function askAnthropic(payload, { apiKey, model }) {
  */
 function buildMessageContent(payload) {
   const images = Array.isArray(payload.images) ? payload.images : [];
-  if (!images.length) return buildUserPrompt(payload);
+  const documents = Array.isArray(payload.documents) ? payload.documents : [];
+  if (!images.length && !documents.length) return buildUserPrompt(payload);
 
   return [
     ...images.map((image) => ({
       type: 'image',
       source: { type: 'base64', media_type: image.mediaType, data: image.data },
+    })),
+    ...documents.map((doc) => ({
+      type: 'document',
+      source: { type: 'base64', media_type: doc.mediaType, data: doc.data },
+      title: doc.name,
     })),
     { type: 'text', text: buildUserPrompt(payload) },
   ];

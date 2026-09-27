@@ -93,7 +93,9 @@ export function attachmentField({ initial = [], onChange = () => {}, id = create
           el('div', { class: 'row' }, [pickButton, input]),
           el('p', {
             class: 'field-hint',
-            text: 'Fotos der Buchseite oder des Arbeitsblatts. Die KI kann sie lesen und die Aufgabe daraus lösen.',
+            text:
+              'Fotos der Buchseite oder des Arbeitsblatts – die KI liest sie und löst die Aufgabe daraus. ' +
+              'PDFs gehen nur an Claude und Gemini über den eigenen Server; sonst bitte ein Foto machen.',
           }),
         ])
       : el('p', { class: 'field-hint', text: 'Dieser Browser unterstützt keine Anhänge.' }),
