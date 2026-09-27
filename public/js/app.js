@@ -137,6 +137,32 @@ function setupShortcuts() {
   });
 }
 
+/**
+ * Startansicht aus der Adresse übernehmen (?view=… &new=1).
+ * Die Kurzbefehle des Home-Bildschirm-Symbols landen genau hier.
+ */
+function applyLaunchParameters() {
+  let params;
+  try {
+    params = new URLSearchParams(window.location.search);
+  } catch {
+    return;
+  }
+
+  const view = params.get('view');
+  if (view && VIEWS[view]) setView(view);
+
+  if (params.get('new') === '1') {
+    // Erst zeichnen, dann den Dialog öffnen – sonst liegt er über einer leeren Seite.
+    setTimeout(() => openTaskDialog(), 0);
+  }
+
+  // Adresse aufräumen, damit ein Neuladen nicht denselben Dialog öffnet.
+  if ((view || params.get('new')) && window.history?.replaceState) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
+
 function start() {
   initStore();
   setupGlobalErrorHandling();

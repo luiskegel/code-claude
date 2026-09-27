@@ -1,0 +1,24 @@
+{
+  "name": "Smart Homework Manager",
+  "short_name": "Hausaufgaben",
+  "description": "Digitales Hausaufgabenheft mit Stundenplan und KI-Lernassistent.",
+  "lang": "de",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f6fb",
+  "theme_color": "#4f46e5",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Aufgabe hinzufügen", "url": "./?view=tasks&new=1", "description": "Direkt eine neue Hausaufgabe anlegen" },
+    { "name": "Stundenplan", "url": "./?view=schedule", "description": "Wochenplan öffnen" },
+    { "name": "KI-Hilfe", "url": "./?view=ai", "description": "Aufgabe mit der KI bearbeiten" }
+  ]
+}
