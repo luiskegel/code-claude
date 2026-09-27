@@ -27,6 +27,8 @@ export async function askOpenAi(payload, { apiKey, model }) {
         messages: [
           { role: 'system', content: buildSystemPrompt(payload.mode) },
           { role: 'user', content: buildContent(payload) },
+          // Nachfragen wie „mach es kürzer" brauchen den bisherigen Verlauf.
+          ...(Array.isArray(payload.history) ? payload.history : []),
         ],
       }),
       signal: controller.signal,

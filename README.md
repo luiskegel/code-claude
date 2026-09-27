@@ -109,6 +109,16 @@ Vor dem Speichern bestätigt man das Ergebnis im Formular.
 | Lösung überprüfen | rechnet selbst nach und vergleicht mit der eigenen Lösung |
 | Lösung anzeigen | vollständige Lösung – erst nach ausdrücklicher Bestätigung |
 
+Ein Foto oder PDF des Arbeitsblatts genügt: Die KI liest die Aufgabenstellung
+vom Blatt ab und nennt sie zu Beginn der Antwort („Erkannte Aufgabe: …"), statt
+nach einer Abschrift zu fragen.
+
+Unter der Antwort lässt sich **nachfragen** – „Kürzer", „Einfacher",
+„Mehr Details", „Nächste Teilaufgabe" oder frei formuliert. Der bisherige
+Verlauf und die Fotos gehen dabei mit, sodass sich die Nachfrage auf das Gesagte
+und weiterhin auf das Arbeitsblatt bezieht. Gespeichert wird immer die zuletzt
+erhaltene Fassung. Der Demo-Tutor kann das nicht – er hat kein Gedächtnis.
+
 **Bedienung**
 
 - Light- und Dark-Mode (folgt standardmässig dem System, umschaltbar im Kopfbereich)

@@ -205,8 +205,16 @@ export function generateMockAnswer(payload) {
     subject = '',
     images = [],
     documents = [],
+    history = [],
   } = payload ?? {};
   const analysis = analyzeQuestion(question);
+
+  // Der Demo-Tutor hat kein Gedächtnis – eine Nachfrage kann er nicht verfeinern.
+  const followUpNote = history.length
+    ? '> **Nachfragen beantwortet der Demo-Tutor nicht.**\n' +
+      '> Er rechnet jedes Mal neu und kennt die vorige Antwort nicht.\n' +
+      '> Mit angebundener KI (siehe README) funktioniert das Nachfassen.\n\n'
+    : '';
 
   // Anhänge kann der Offline-Tutor nicht lesen – das wird klar gesagt, statt zu raten.
   const anhaenge = images.length + documents.length;
@@ -222,7 +230,7 @@ export function generateMockAnswer(payload) {
   else if (analysis.kind === 'derivative') content = derivativeAnswer(mode, analysis, userSolution);
   else content = genericAnswer(mode, question, subject, userSolution);
 
-  return { content: `${imageNote}${content.trim()}\n`, provider: 'mock' };
+  return { content: `${followUpNote}${imageNote}${content.trim()}\n`, provider: 'mock' };
 }
 
 function quadraticAnswer(mode, analysis, userSolution) {

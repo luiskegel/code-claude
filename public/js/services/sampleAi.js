@@ -21,14 +21,36 @@ export async function getSampleApi() {
   return getCloudSample();
 }
 
+/**
+ * Die Grenzwerte dieser Ansicht – nur zum Zuschneiden, nicht als Verbot.
+ *
+ * Ein Fehlschlag wird bewusst nicht gemerkt: Sonst bliebe eine einmalige
+ * Störung für die ganze Sitzung hängen und die App hielte Fotos für
+ * unmöglich, obwohl sie längst wieder gingen.
+ */
 function getLimits(sample) {
-  if (!limitsPromise) limitsPromise = sample.limits().catch(() => null);
+  if (!limitsPromise) {
+    limitsPromise = Promise.resolve()
+      .then(() => sample.limits())
+      .catch(() => {
+        limitsPromise = null;
+        return null;
+      });
+  }
   return limitsPromise;
 }
 
 /**
  * Stellt die Anfrage an Claude.
- * @param {object} payload mode, question, subject, taskTitle, userSolution, attachments
+ *
+ * Fotos werden immer mitgeschickt und erst dann weggelassen, wenn die Ansicht
+ * sie tatsächlich ablehnt. Früher entschied `limits()` allein darüber – meldete
+ * es keine Bildunterstützung (oder war es kurz nicht erreichbar), blieb das
+ * Foto des Arbeitsblatts liegen und Claude fragte nach einer Aufgabe, die es
+ * längst vor sich gehabt hätte.
+ *
+ * @param {object} payload mode, question, subject, taskTitle, userSolution,
+ *                 attachments, history
  * @param {{onText?: Function, signal?: AbortSignal}} [options]
  * @returns {Promise<{content: string, provider: string, notice?: string}>}
  */
@@ -46,43 +68,88 @@ export async function askClaude(payload, { onText, signal } = {}) {
     allowPdf: false,
   });
 
-  if (!limits?.images && plan.images.length) {
-    plan.skipped.push(
-      ...plan.images.map((entry) => ({
-        name: entry.name,
-        reason: 'diese Ansicht kann keine Bilder an Claude schicken',
-      })),
-    );
-    plan.images = [];
-  }
-
   const { files: images, failed } = await loadFiles(plan.images, limits?.images);
+  const history = normalizeHistory(payload.history);
+  const skipped = [...plan.skipped];
 
-  // Es gibt keinen System-Prompt: Die Regeln stehen am Anfang der Nachricht.
-  const prompt = `${buildSystemPrompt(payload.mode)}\n\n---\n\n${buildUserPrompt({
-    ...payload,
-    images,
-  })}`;
+  /** Ein Anlauf – der Prompt nennt genau die Bilder, die auch mitgehen. */
+  const attempt = (files) => {
+    // Es gibt keinen System-Prompt: Die Regeln stehen am Anfang der Nachricht.
+    const prompt = `${buildSystemPrompt(payload.mode)}\n\n---\n\n${buildUserPrompt({
+      ...payload,
+      images: files,
+    })}`;
 
-  try {
-    const result = await sample(prompt, {
-      images: images.length ? images : undefined,
+    return sample(history.length ? [{ role: 'user', content: prompt }, ...history] : prompt, {
+      images: files.length ? files : undefined,
       modelTier: 'default',
       onText,
       signal,
+      // Eine Nachfrage muss eine neue Antwort bringen, keine Wiederholung.
+      ...(history.length ? { cache: false } : {}),
     });
+  };
 
-    return {
-      content: result.text,
-      provider: 'Claude',
-      notice: buildNotice({
-        truncated: result.truncated,
-        skippedText: describeSkipped(plan.skipped, failed),
-      }),
-    };
+  let result;
+  try {
+    result = await attempt(images);
   } catch (error) {
-    throw new SampleError(messageFor(error), error?.code, error?.text);
+    const reason = imageRefusal(error);
+
+    // Die Ansicht nimmt die Bilder nicht – dann ohne sie, aber mit Ansage.
+    if (!images.length || !reason) {
+      throw new SampleError(messageFor(error), error?.code, error?.text);
+    }
+
+    skipped.push(...plan.images.map((entry) => ({ name: entry.name, reason })));
+
+    try {
+      result = await attempt([]);
+    } catch (retryError) {
+      throw new SampleError(messageFor(retryError), retryError?.code, retryError?.text);
+    }
   }
+
+  return {
+    content: result.text,
+    provider: 'Claude',
+    notice: buildNotice({
+      truncated: result.truncated,
+      skippedText: describeSkipped(skipped, failed),
+    }),
+  };
+}
+
+/** Lag es an den Bildern? Dann sagt der Rückgabewert, warum. */
+function imageRefusal(error) {
+  if (error?.code === 'images_unavailable') {
+    return 'diese Ansicht schickt keine Bilder an Claude – öffne die App im Browser (claude.ai in Safari)';
+  }
+  if (error?.code === 'image_rejected') {
+    return 'das Bild wurde abgelehnt (Format oder Grösse) – mach ein neues Foto als JPG';
+  }
+  return null;
+}
+
+/**
+ * Der Verlauf nach der ersten Antwort, damit Nachfragen wie „mach es kürzer"
+ * wissen, worauf sie sich beziehen. Claude erwartet abwechselnde Rollen und
+ * eine Nutzerfrage am Schluss.
+ */
+function normalizeHistory(history) {
+  if (!Array.isArray(history)) return [];
+
+  const turns = history
+    .filter((turn) => turn && typeof turn.content === 'string' && turn.content.trim())
+    .map((turn) => ({
+      role: turn.role === 'assistant' ? 'assistant' : 'user',
+      content: turn.content.trim(),
+    }));
+
+  // Ohne abschliessende Nutzerfrage gibt es nichts nachzufragen.
+  while (turns.length && turns[turns.length - 1].role !== 'user') turns.pop();
+
+  return turns;
 }
 
 /** Lädt die Dateien; was dabei ausfällt, wird gemeldet statt übergangen. */

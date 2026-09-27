@@ -25,7 +25,15 @@ export async function askGemini(payload, { apiKey, model }) {
       },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: buildSystemPrompt(payload.mode) }] },
-        contents: [{ role: 'user', parts: buildParts(payload) }],
+        contents: [
+          { role: 'user', parts: buildParts(payload) },
+          // Nachfragen wie „mach es kürzer" brauchen den bisherigen Verlauf.
+          // Gemini nennt die Antwortrolle „model" statt „assistant".
+          ...(Array.isArray(payload.history) ? payload.history : []).map((turn) => ({
+            role: turn.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: turn.content }],
+          })),
+        ],
         generationConfig: { maxOutputTokens: 2000 },
       }),
       signal: controller.signal,

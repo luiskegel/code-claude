@@ -20,7 +20,10 @@ const TIMEOUT_MS = 60000;
 
 /**
  * @param {{mode:string, question:string, subject?:string, taskTitle?:string,
- *          userSolution?:string, attachments?:Array}} payload
+ *          userSolution?:string, attachments?:Array,
+ *          history?:Array<{role:'user'|'assistant', content:string}>}} payload
+ *        `history` ist der Verlauf nach der ersten Antwort – damit Nachfragen
+ *        wie „mach es kürzer" wissen, worauf sie sich beziehen.
  * @param {{onText?: Function, signal?: AbortSignal}} [options]
  * @returns {Promise<{content:string, provider:string, notice?:string}>}
  */

@@ -37,6 +37,9 @@ const MIME_TYPES = {
 const MAX_BODY_BYTES = 12 * 1024 * 1024;
 const MAX_IMAGES = 4;
 const MAX_DOCUMENTS = 2;
+// Verlauf für Nachfragen: genug für ein Gespräch, zu wenig für Missbrauch.
+const MAX_HISTORY_TURNS = 20;
+const MAX_HISTORY_CHARS = 8000;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const PDF_TYPE = 'application/pdf';
 
@@ -104,6 +107,7 @@ async function handleAiRequest(request, response) {
 
   const images = sanitizeImages(payload?.images);
   const allDocuments = sanitizeDocuments(payload?.documents);
+  const history = sanitizeHistory(payload?.history);
 
   // PDFs nur an Anbieter geben, die sie lesen können – sonst ehrlich melden.
   const documents = PDF_CAPABLE.has(config.provider) ? allDocuments : [];
@@ -112,7 +116,7 @@ async function handleAiRequest(request, response) {
       ? `${config.providerLabel} kann PDFs nicht lesen. ${allDocuments.length === 1 ? 'Das PDF wurde' : 'Die PDFs wurden'} nicht mitgeschickt – mach ein Foto der Seite.`
       : null;
 
-  if (!question && !images.length && !documents.length) {
+  if (!question && !images.length && !documents.length && !history.length) {
     return sendJson(response, 400, {
       message: 'Es wurde weder eine Aufgabe noch ein lesbarer Anhang übermittelt.',
     });
@@ -123,7 +127,7 @@ async function handleAiRequest(request, response) {
     });
   }
 
-  const request_ = { mode, question, userSolution, subject, taskTitle, images, documents };
+  const request_ = { mode, question, userSolution, subject, taskTitle, images, documents, history };
 
   const ask = { anthropic: askAnthropic, openai: askOpenAi, gemini: askGemini }[config.provider];
 
@@ -193,6 +197,33 @@ function sanitizeDocuments(raw) {
       data: doc.data,
       name: typeof doc.name === 'string' ? doc.name.slice(0, 120) : 'dokument.pdf',
     }));
+}
+
+/**
+ * Der Gesprächsverlauf nach der ersten Antwort. Die Anbieter erwarten
+ * abwechselnde Rollen und eine Nutzerfrage am Schluss; alles andere fliegt
+ * raus, statt beim Anbieter einen Fehler auszulösen.
+ */
+function sanitizeHistory(raw) {
+  if (!Array.isArray(raw)) return [];
+
+  const turns = [];
+  let used = 0;
+
+  for (const turn of raw.slice(-MAX_HISTORY_TURNS)) {
+    const content = typeof turn?.content === 'string' ? turn.content.trim() : '';
+    if (!content) continue;
+
+    const text = content.slice(0, MAX_HISTORY_CHARS - used);
+    if (!text) break;
+    used += text.length;
+
+    turns.push({ role: turn.role === 'assistant' ? 'assistant' : 'user', content: text });
+  }
+
+  while (turns.length && turns[turns.length - 1].role !== 'user') turns.pop();
+
+  return turns;
 }
 
 /* ---------------- Statische Dateien ---------------- */

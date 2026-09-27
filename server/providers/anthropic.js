@@ -27,7 +27,11 @@ export async function askAnthropic(payload, { apiKey, model }) {
         model,
         max_tokens: 2000,
         system: buildSystemPrompt(payload.mode),
-        messages: [{ role: 'user', content: buildMessageContent(payload) }],
+        messages: [
+          { role: 'user', content: buildMessageContent(payload) },
+          // Nachfragen wie „mach es kürzer" brauchen den bisherigen Verlauf.
+          ...(Array.isArray(payload.history) ? payload.history : []),
+        ],
       }),
       signal: controller.signal,
     });

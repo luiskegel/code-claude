@@ -47,7 +47,9 @@ const BASE_RULES = `Du bist ein geduldiger Lern-Tutor für Schülerinnen und Sch
 Sprache: Deutsch, klar und freundlich, kein Fachjargon ohne Erklärung.
 Formatiere mit kurzen Absätzen, Listen und **Fettungen**; nutze \`Code\`-Auszeichnung für Formeln.
 Rechne immer nachvollziehbar vor und behaupte niemals ohne Begründung, etwas sei richtig oder falsch.
-Erfinde keine Quellen und keine Fakten; wenn dir Informationen fehlen, sage das und stelle eine Rückfrage.`;
+Erfinde keine Quellen und keine Fakten.
+Liegt ein Foto oder ein PDF bei, ist das die Aufgabenstellung: lies sie dort ab, statt danach zu fragen.
+Nur wenn eine Angabe weder im Text noch in einem Anhang steht, sage das und stelle eine gezielte Rückfrage.`;
 
 const MODE_RULES = {
   hint: `Modus "Hinweis": Gib NUR einen Denkanstoss (maximal 3 Sätze plus optional eine Leitfrage).
@@ -78,14 +80,21 @@ export function buildUserPrompt({ question, subject, taskTitle, userSolution, im
   if (documents.length) anhaenge.push(documents.length === 1 ? 'ein PDF' : `${documents.length} PDFs`);
 
   if (anhaenge.length) {
+    // Ohne diese Ansage fragt das Modell nach dem Aufgabentext, obwohl es das
+    // Arbeitsblatt vor sich hat – genau der Fall, den die App vermeiden soll.
     parts.push(
-      `Oben findest du ${anhaenge.join(' und ')} zur Aufgabe. ` +
-        'Lies die Aufgabenstellung daraus ab. Ist etwas unleserlich oder mehrdeutig, sage das ausdrücklich, ' +
-        'statt zu raten. Gehört mehr als eine Aufgabe dazu, beantworte sie der Reihe nach.',
+      `Oben findest du ${anhaenge.join(' und ')}. Darauf steht die Aufgabenstellung. ` +
+        'Lies sie ab und beginne deine Antwort mit einer Zeile „**Erkannte Aufgabe:** …", ' +
+        'in der du in einem Satz wiedergibst, was dort verlangt wird. ' +
+        'Das Feld „Aufgabe" unten ist nur eine kurze Notiz und ersetzt die Aufgabenstellung nicht – ' +
+        'bitte nicht darum, sie abzutippen, und frage nicht nach Thema, Klassenstufe oder Material, ' +
+        'das auf dem Blatt steht. ' +
+        'Bearbeite alle Teilaufgaben, die du erkennst, der Reihe nach. ' +
+        'Ist eine einzelne Stelle wirklich unleserlich, benenne genau sie und arbeite mit dem Rest weiter.',
     );
   }
 
-  parts.push(`Aufgabe:\n${question || '(siehe Anhang)'}`);
+  parts.push(`Aufgabe:\n${question || '(steht im Anhang)'}`);
   if (userSolution) parts.push(`Meine eigene Lösung:\n${userSolution}`);
   return parts.join('\n\n');
 }

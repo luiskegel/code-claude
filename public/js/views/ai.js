@@ -30,7 +30,21 @@ const aiState = {
   savedFor: null,
   streaming: false,
   controller: null,
+  /** Nachfragen und Antworten nach der ersten Antwort: [{role, content}]. */
+  turns: [],
+  /** Entwurf im Nachfragefeld – überlebt das Neuzeichnen. */
+  followUp: '',
+  /** Text, der gerade hereinströmt (erste Antwort oder Nachfrage). */
+  streamText: '',
 };
+
+/** Häufige Nachfragen als ein Tipp statt als Tipparbeit. */
+const FOLLOW_UP_CHIPS = [
+  { label: 'Kürzer', text: 'Fasse das deutlich kürzer zusammen – nur das Wesentliche.' },
+  { label: 'Einfacher', text: 'Erkläre das noch einmal einfacher, so als wäre ich neu im Thema.' },
+  { label: 'Mehr Details', text: 'Geh ausführlicher auf den Lösungsweg ein und begründe jeden Schritt.' },
+  { label: 'Nächste Teilaufgabe', text: 'Mach mit der nächsten Teilaufgabe auf dem Blatt weiter.' },
+];
 
 let status = { provider: 'mock', configured: false };
 
@@ -55,6 +69,8 @@ export function aiView() {
       aiState.userSolution = '';
       aiState.extraAttachments = [];
       aiState.savedFor = null;
+      aiState.turns = [];
+      aiState.followUp = '';
     }
   }
 
@@ -65,7 +81,7 @@ export function aiView() {
 
   const refresh = () => {
     renderModes(modeGrid, run);
-    renderAnswer(answerPanel, linkedTask, refresh);
+    renderAnswer(answerPanel, linkedTask, refresh, askFollowUp);
   };
 
   const questionField = el('textarea', {
@@ -133,35 +149,24 @@ export function aiView() {
       return;
     }
 
+    // Ein neuer Modus beginnt ein neues Gespräch.
     aiState.loading = true;
     aiState.error = null;
     aiState.answer = null;
     aiState.notice = null;
+    aiState.turns = [];
+    aiState.streamText = '';
     refresh();
 
     aiState.controller = new AbortController();
 
     try {
-      const result = await requestAiAnswer(
-        {
-          mode: modeId,
-          question: questionField.value.trim(),
-          userSolution: solutionField.value.trim(),
-          subject: linkedTask?.subject ?? '',
-          taskTitle: linkedTask?.title ?? '',
-          attachments: collectAttachments(),
-        },
-        {
-          signal: aiState.controller.signal,
-          // Die Antwort erscheint, während sie geschrieben wird.
-          onText: ({ text }) => {
-            aiState.answer = text;
-            aiState.answerMode = modeId;
-            aiState.streaming = true;
-            renderAnswer(answerPanel, linkedTask, refresh);
-          },
-        },
-      );
+      const result = await send({
+        mode: modeId,
+        question: questionField.value.trim(),
+        userSolution: solutionField.value.trim(),
+        attachments: collectAttachments(),
+      });
 
       aiState.answer = result.content;
       aiState.answerMode = modeId;
@@ -169,19 +174,95 @@ export function aiView() {
       aiState.notice = result.notice ?? null;
       aiState.savedFor = null;
     } catch (error) {
-      if (error?.code === 'cancelled') {
-        aiState.error = null;
-      } else {
-        aiState.error =
-          error instanceof AiError ? error.message : 'Unbekannter Fehler bei der KI-Anfrage. Bitte erneut versuchen.';
-        console.error('KI-Anfrage fehlgeschlagen:', error);
-      }
+      reportError(error);
     } finally {
-      aiState.loading = false;
-      aiState.streaming = false;
-      aiState.controller = null;
-      refresh();
+      finishRequest();
     }
+  }
+
+  /**
+   * Nachfrage zur bereits gegebenen Antwort („mach es kürzer"). Der bisherige
+   * Verlauf geht mit, damit sich die Nachfrage auf das Gesagte beziehen kann;
+   * die Fotos ebenso, damit das Arbeitsblatt weiter vor Augen bleibt.
+   */
+  async function askFollowUp(text) {
+    const question = String(text ?? '').trim();
+    if (!question || aiState.loading || !aiState.answer) return;
+
+    aiState.turns.push({ role: 'user', content: question });
+    aiState.followUp = '';
+    aiState.loading = true;
+    aiState.error = null;
+    aiState.streamText = '';
+    refresh();
+
+    // Auf dem iPad steht die Nachfrage sonst unterhalb des sichtbaren Bereichs.
+    answerPanel.querySelector('.ai-question-bubble:last-of-type')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+
+    aiState.controller = new AbortController();
+
+    try {
+      const result = await send({
+        mode: aiState.answerMode ?? aiState.mode,
+        question: questionField.value.trim(),
+        userSolution: solutionField.value.trim(),
+        attachments: collectAttachments(),
+        history: [{ role: 'assistant', content: aiState.answer }, ...aiState.turns],
+      });
+
+      aiState.turns.push({ role: 'assistant', content: result.content });
+      aiState.provider = result.provider;
+      aiState.notice = result.notice ?? null;
+      aiState.savedFor = null;
+    } catch (error) {
+      // Die Nachfrage kommt zurück ins Eingabefeld, statt verloren zu gehen.
+      aiState.turns.pop();
+      aiState.followUp = question;
+      reportError(error);
+    } finally {
+      finishRequest();
+    }
+  }
+
+  /** Eine Anfrage an die KI, samt Live-Anzeige des einlaufenden Textes. */
+  function send(payload) {
+    return requestAiAnswer(
+      {
+        subject: linkedTask?.subject ?? '',
+        taskTitle: linkedTask?.title ?? '',
+        ...payload,
+      },
+      {
+        signal: aiState.controller.signal,
+        // Die Antwort erscheint, während sie geschrieben wird.
+        onText: ({ text }) => {
+          aiState.streamText = text;
+          aiState.streaming = true;
+          renderAnswer(answerPanel, linkedTask, refresh, askFollowUp);
+        },
+      },
+    );
+  }
+
+  function reportError(error) {
+    if (error?.code === 'cancelled') {
+      aiState.error = null;
+      return;
+    }
+    aiState.error =
+      error instanceof AiError ? error.message : 'Unbekannter Fehler bei der KI-Anfrage. Bitte erneut versuchen.';
+    console.error('KI-Anfrage fehlgeschlagen:', error);
+  }
+
+  function finishRequest() {
+    aiState.loading = false;
+    aiState.streaming = false;
+    aiState.streamText = '';
+    aiState.controller = null;
+    refresh();
   }
 
   refresh();
@@ -271,50 +352,26 @@ function renderModes(container, run) {
   );
 }
 
-function renderAnswer(container, linkedTask, refresh) {
-  // Während die Antwort geschrieben wird, ist sie schon zu sehen.
-  if (aiState.loading) {
-    render(container, [
-      el('div', { class: 'ai-loading' }, [
-        el('span', { class: 'spinner' }),
-        aiState.answer ? 'Claude schreibt …' : `„${getMode(aiState.mode).name}" wird vorbereitet …`,
-        el(
-          'button',
-          {
-            class: 'btn btn-ghost btn-sm',
-            type: 'button',
-            style: { marginLeft: 'auto' },
-            text: 'Abbrechen',
-            on: { click: () => aiState.controller?.abort() },
-          },
-        ),
-      ]),
-      aiState.answer ? el('div', { class: 'ai-content' }, [renderMarkdown(aiState.answer)]) : null,
-    ]);
-    return;
-  }
-
-  if (aiState.error) {
-    render(container, [
-      el('div', { class: 'alert', data: { tone: 'error' } }, [
-        el('span', { 'aria-hidden': 'true', text: '⚠️' }),
-        el('span', { text: aiState.error }),
-      ]),
-      el('p', {
-        class: 'muted',
-        text: 'Du kannst es direkt erneut versuchen – deine Eingaben bleiben erhalten.',
-      }),
-    ]);
-    return;
-  }
-
+function renderAnswer(container, linkedTask, refresh, askFollowUp) {
+  // Die erste Antwort steht noch aus: nur Ladeanzeige bzw. leerer Zustand.
   if (!aiState.answer) {
+    if (aiState.loading) {
+      render(container, [
+        busyBar(`„${getMode(aiState.mode).name}" wird vorbereitet …`),
+        aiState.streamText ? el('div', { class: 'ai-content' }, [renderMarkdown(aiState.streamText)]) : null,
+      ]);
+      return;
+    }
+
     render(container, [
-      emptyState({
-        icon: '✨',
-        title: 'Noch keine Antwort',
-        text: 'Gib links eine Aufgabe ein und wähle, wie dir geholfen werden soll. Der Hinweis-Modus verrät die Lösung bewusst nicht.',
-      }),
+      aiState.error ? errorBlock() : null,
+      aiState.error
+        ? null
+        : emptyState({
+            icon: '✨',
+            title: 'Noch keine Antwort',
+            text: 'Gib links eine Aufgabe ein und wähle, wie dir geholfen werden soll. Der Hinweis-Modus verrät die Lösung bewusst nicht.',
+          }),
     ]);
     return;
   }
@@ -331,8 +388,122 @@ function renderAnswer(container, linkedTask, refresh) {
     aiState.notice
       ? el('div', { class: 'alert', data: { tone: 'warning' } }, [el('span', { text: aiState.notice })])
       : null,
+
+    // Erste Antwort und danach der Verlauf der Nachfragen.
     el('div', { class: 'ai-content' }, [renderMarkdown(aiState.answer)]),
+    ...aiState.turns.map((turn) =>
+      turn.role === 'user'
+        ? el('div', { class: 'ai-question-bubble' }, [
+            el('span', { class: 'ai-bubble-label', text: 'Deine Nachfrage' }),
+            el('p', { text: turn.content }),
+          ])
+        : el('div', { class: 'ai-content' }, [renderMarkdown(turn.content)]),
+    ),
+
+    aiState.loading ? busyBar('Die KI schreibt …') : null,
+    aiState.loading && aiState.streamText
+      ? el('div', { class: 'ai-content' }, [renderMarkdown(aiState.streamText)])
+      : null,
+
+    aiState.error ? errorBlock() : null,
+    aiState.loading ? null : followUpBar(askFollowUp, refresh),
     saveSolutionBar(linkedTask, refresh),
+  ]);
+}
+
+/** Ladeanzeige mit Abbrechen – für die erste Antwort wie für Nachfragen. */
+function busyBar(label) {
+  return el('div', { class: 'ai-loading' }, [
+    el('span', { class: 'spinner' }),
+    label,
+    el('button', {
+      class: 'btn btn-ghost btn-sm',
+      type: 'button',
+      style: { marginLeft: 'auto' },
+      text: 'Abbrechen',
+      on: { click: () => aiState.controller?.abort() },
+    }),
+  ]);
+}
+
+function errorBlock() {
+  return el('div', { class: 'stack' }, [
+    el('div', { class: 'alert', data: { tone: 'error' } }, [
+      el('span', { 'aria-hidden': 'true', text: '⚠️' }),
+      el('span', { text: aiState.error }),
+    ]),
+    el('p', {
+      class: 'muted',
+      text: 'Du kannst es direkt erneut versuchen – deine Eingaben bleiben erhalten.',
+    }),
+  ]);
+}
+
+/**
+ * Weiterschreiben statt neu anfangen: Nachfragen zur gegebenen Antwort.
+ * Die häufigsten Wünsche liegen als Knopf bereit, alles andere als freier Text.
+ */
+function followUpBar(askFollowUp, refresh) {
+  const input = el('textarea', {
+    class: 'textarea',
+    id: 'ai-followup',
+    rows: 2,
+    placeholder: 'Nachfrage – z.B. „Mach es kürzer" oder „Erklär Schritt 2 genauer".',
+    text: aiState.followUp,
+    maxLength: 1000,
+    style: { minHeight: '64px' },
+  });
+  input.addEventListener('input', () => {
+    aiState.followUp = input.value;
+  });
+  // Enter schickt ab, Umschalt+Enter macht einen Absatz.
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      askFollowUp(input.value);
+    }
+  });
+
+  return el('div', { class: 'ai-followup' }, [
+    el('span', { class: 'field-label', text: 'Weiter mit der KI sprechen' }),
+    el(
+      'div',
+      { class: 'chip-row' },
+      FOLLOW_UP_CHIPS.map((chip) =>
+        el('button', {
+          class: 'btn btn-ghost btn-sm',
+          type: 'button',
+          text: chip.label,
+          on: { click: () => askFollowUp(chip.text) },
+        }),
+      ),
+    ),
+    input,
+    el('div', { class: 'row' }, [
+      el(
+        'button',
+        {
+          class: 'btn btn-primary btn-sm',
+          type: 'button',
+          on: { click: () => askFollowUp(input.value) },
+        },
+        [icon('sparkles', 16), 'Nachfrage senden'],
+      ),
+      aiState.turns.length
+        ? el('button', {
+            class: 'btn btn-ghost btn-sm',
+            type: 'button',
+            text: 'Verlauf löschen',
+            on: {
+              click: () => {
+                aiState.turns = [];
+                aiState.savedFor = null;
+                refresh();
+              },
+            },
+          })
+        : null,
+    ]),
   ]);
 }
 
@@ -371,7 +542,8 @@ function saveSolutionBar(linkedTask, refresh) {
             aiState.savedFor = linkedTask.id;
             updateTask(linkedTask.id, {
               solution: {
-                content: aiState.answer,
+                // Gespeichert wird der Stand nach den Nachfragen, nicht der erste Entwurf.
+                content: latestAnswer(),
                 mode: aiState.answerMode ?? aiState.mode,
                 provider: aiState.provider ?? 'unbekannt',
                 savedAt: new Date().toISOString(),
@@ -391,6 +563,14 @@ function saveSolutionBar(linkedTask, refresh) {
       ? el('span', { class: 'field-hint', text: `Erscheint im Stundenplan bei: ${target}` })
       : el('span', { class: 'field-hint', text: 'Die Aufgabe ist keiner Stunde zugeordnet.' }),
   ]);
+}
+
+/** Die zuletzt gegebene Antwort – nach Nachfragen ist das nicht mehr die erste. */
+function latestAnswer() {
+  for (let index = aiState.turns.length - 1; index >= 0; index -= 1) {
+    if (aiState.turns[index].role === 'assistant') return aiState.turns[index].content;
+  }
+  return aiState.answer;
 }
 
 const WEEKDAY_NAMES = { 1: 'Montag', 2: 'Dienstag', 3: 'Mittwoch', 4: 'Donnerstag', 5: 'Freitag' };
