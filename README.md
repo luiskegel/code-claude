@@ -106,10 +106,16 @@ liefert der Host. Im Vergleich zur normalen Website gibt es drei Unterschiede:
 
 - Die App navigiert im Arbeitsspeicher, weil der Artefakt-Rahmen keine eigenen Pfade erlaubt.
   Nach dem Neuladen startet sie auf der Übersicht.
-- Der Fortschritt liegt wie gewohnt im LocalStorage, und zwar getrennt für jede Person, die das
-  Artefakt öffnet. Ohne nutzbaren Speicher läuft die App weiter und zeigt einen Hinweis.
+- Der Fortschritt wird zusätzlich privat im Claude-Konto gesichert (Fähigkeiten `db` und `user`,
+  Dokument `data/users/<id>/typeflow`). Diesen Bereich sieht niemand außer der Person selbst,
+  auch nicht, wer das Artefakt geteilt hat. Er übersteht gelöschte Browserdaten und steht auf
+  anderen Geräten bereit. Sichern können die Eigentümerin oder der Eigentümer und Personen mit
+  der Freigabe „Mitwirken“. Wer nur ansehen darf oder nicht angemeldet ist, übt mit
+  Browserspeicher, und die Einstellungen sagen das.
 - Die Einstellung „System“ folgt dem Farbschema des Betrachters. „Hell“ und „Dunkel“ gelten
   wie gewohnt.
+
+Beim Veröffentlichen braucht die Seite deshalb die Fähigkeiten `{ db: {}, user: {} }`.
 
 ## Tests
 
@@ -311,6 +317,13 @@ interface ExerciseResult {
 
 Robustheit:
 
+- **Absturzsicher:** Chromium schreibt LocalStorage erst nach bis zu etwa 20 Sekunden auf die
+  Festplatte. Wer eine Übung beendet und die App sofort schließt oder wegwischt, würde sonst die
+  letzte Übung verlieren. Jede Änderung landet deshalb zusätzlich sofort in einer
+  Gerätesicherung in IndexedDB, festgeschrieben mit `durability: 'strict'`. Ein Zeitstempel
+  (`typeflow:saved-at`) zeigt, welcher Stand neuer ist. Beim Start übernimmt die App eine
+  neuere Sicherung und bringt veraltete Sicherungen auf den aktuellen Stand
+  (`src/state/backup/`).
 - **Validierung beim Laden:** Jedes Feld wird geprüft. Ungültige Einträge werden verworfen oder
   durch sichere Standardwerte ersetzt, statt die App abstürzen zu lassen.
 - **Migrationen:** Beide Datensätze tragen eine `version`. Neue Versionen ergänzen eine Funktion
@@ -322,7 +335,8 @@ Robustheit:
 - **Kein LocalStorage** (z. B. blockierte Website-Daten): Die App läuft mit flüchtigem Speicher
   weiter und sagt deutlich, dass der Fortschritt beim Schließen verloren geht.
 - **Mehrere Tabs** bleiben über das `storage`-Ereignis synchron.
-- **Datenschutz:** Es gibt keine Server, keine Tracker und keine externen Anfragen.
+- **Datenschutz:** Die Website nutzt keine Server, keine Tracker und keine externen Anfragen.
+  Nur als Claude-Artefakt kommt die private Sicherung im Claude-Konto hinzu (siehe oben).
 
 ## Design-System
 
@@ -384,8 +398,11 @@ Umbenennung keine Lernstände löscht.
 
 - **Nur deutsches QWERTZ.** Schweizer, österreichische Sonderbelegungen und andere Sprachen sind
   nicht abgebildet. Zeichen über AltGr bzw. Option (z. B. @, €, Klammern) gehören nicht zum Kurs.
-- **Lokal statt Cloud:** Fortschritt wird nicht zwischen Geräten oder Browsern synchronisiert.
-  Wer Browserdaten löscht, löscht auch den Lernstand.
+- **Website: nur lokal.** Auf der Website wird der Fortschritt nicht zwischen Geräten oder
+  Browsern abgeglichen. Wer die Browserdaten der Seite löscht, löscht auch den Lernstand. Safari
+  entfernt die Daten einer Website, wenn sie über sieben Tage Safari-Nutzung hinweg nicht
+  geöffnet wurde. Für Web-Apps auf dem Home-Bildschirm gilt das nicht. Als Claude-Artefakt
+  schützt die Sicherung im Claude-Konto vor beidem.
 - **Für physische Tastaturen gebaut:** Auf Smartphones sind alle Seiten nutzbar und das Üben
   funktioniert technisch. Bildschirmtastaturen liefern Zeichen aber teils wortweise, dann sind
   Zeitmessung und Fingerhinweise ungenauer.

@@ -22,6 +22,7 @@ import {
   writeRaw,
   type KeyValueStorage,
 } from '../domain/storage/storage';
+import type { CloudStatus } from './backup/cloudBackend';
 
 export interface StorageStatus {
   /** Daten überleben einen Neustart des Browsers */
@@ -30,6 +31,8 @@ export interface StorageStatus {
   lastWriteFailed: boolean;
   /** Beim Laden wurden beschädigte Daten gefunden und ersetzt */
   recoveredFromCorruption: boolean;
+  /** Sicherung im Claude-Konto (nur als Claude-Artefakt, sonst „off“) */
+  cloud: CloudStatus;
 }
 
 export interface AppState {
@@ -50,6 +53,7 @@ export interface AppActions {
 export interface AppStore extends AppActions {
   getState(): AppState;
   subscribe(listener: () => void): () => void;
+  setCloudStatus(status: CloudStatus): void;
 }
 
 const CORRUPT_BACKUP_SUFFIX = ':backup';
@@ -98,6 +102,7 @@ export function createAppStore(storage: KeyValueStorage, persistent: boolean): A
         persistent,
         lastWriteFailed: false,
         recoveredFromCorruption: settings.corrupt || progress.corrupt,
+        cloud: 'off',
       },
     };
   };
@@ -171,7 +176,12 @@ export function createAppStore(storage: KeyValueStorage, persistent: boolean): A
       setState({
         settings: { ...DEFAULT_SETTINGS },
         progress: createEmptyProgress(),
-        storage: { persistent, lastWriteFailed: false, recoveredFromCorruption: false },
+        storage: {
+          persistent,
+          lastWriteFailed: false,
+          recoveredFromCorruption: false,
+          cloud: state.storage.cloud,
+        },
       });
     },
 
@@ -179,8 +189,17 @@ export function createAppStore(storage: KeyValueStorage, persistent: boolean): A
       const loaded = load();
       setState({
         ...loaded,
-        storage: { ...loaded.storage, lastWriteFailed: state.storage.lastWriteFailed },
+        storage: {
+          ...loaded.storage,
+          lastWriteFailed: state.storage.lastWriteFailed,
+          cloud: state.storage.cloud,
+        },
       });
+    },
+
+    setCloudStatus(cloud) {
+      if (cloud !== state.storage.cloud)
+        setState({ ...state, storage: { ...state.storage, cloud } });
     },
   };
 }

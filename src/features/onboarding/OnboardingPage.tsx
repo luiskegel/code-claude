@@ -13,6 +13,7 @@ import { GOAL_OPTIONS, settingsForGoal, type LearningGoal } from '../../domain/s
 import { cn } from '../../lib/cn';
 import { usePageTitle } from '../../lib/hooks';
 import { useActions, useSettings } from '../../state/hooks';
+import { ONBOARDING_PRIVACY } from '../shared/privacy';
 
 type KeyboardChoice = 'apple-de' | 'standard-de' | 'other';
 
@@ -56,7 +57,7 @@ const FEATURES: readonly { icon: IconName; title: string; text: string }[] = [
   {
     icon: 'shield',
     title: 'Ganz privat',
-    text: 'Kein Konto nötig. Dein Fortschritt bleibt in deinem Browser.',
+    text: ONBOARDING_PRIVACY,
   },
 ];
 

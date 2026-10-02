@@ -8,12 +8,16 @@ import { Icon } from '../ui/Icon';
  * ein Seitenwechsel dagegen nicht.
  */
 export function StorageNotice() {
-  const { persistent, lastWriteFailed } = useStorageStatus();
-  const message = !persistent
-    ? 'Dein Browser erlaubt gerade kein dauerhaftes Speichern (zum Beispiel im privaten Modus). Dein Fortschritt geht beim Schließen des Tabs verloren.'
-    : lastWriteFailed
-      ? 'Dein Fortschritt konnte zuletzt nicht gespeichert werden – möglicherweise ist der Browserspeicher voll.'
-      : null;
+  const { persistent, lastWriteFailed, cloud } = useStorageStatus();
+  // Mit der Sicherung im Claude-Konto geht nichts verloren; solange sie sich verbindet, nicht vorschnell warnen.
+  const covered = cloud === 'on' || cloud === 'connecting';
+  const message = covered
+    ? null
+    : !persistent
+      ? 'Dein Browser erlaubt gerade kein dauerhaftes Speichern (zum Beispiel im privaten Modus). Dein Fortschritt geht beim Schließen des Tabs verloren.'
+      : lastWriteFailed
+        ? 'Dein Fortschritt konnte zuletzt nicht gespeichert werden – möglicherweise ist der Browserspeicher voll.'
+        : null;
 
   return (
     <div

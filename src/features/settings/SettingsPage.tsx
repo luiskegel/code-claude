@@ -25,6 +25,7 @@ import { cn } from '../../lib/cn';
 import { usePageTitle } from '../../lib/hooks';
 import { playSound } from '../../lib/sound';
 import { useActions, useSettings, useStorageStatus } from '../../state/hooks';
+import { privacyStatement } from '../shared/privacy';
 import { SettingRow } from './SettingRow';
 
 type ResetDialog = 'progress' | 'all' | null;
@@ -292,8 +293,7 @@ export function SettingsPage() {
           <div className="space-y-3 py-4">
             <p className="flex items-start gap-2.5 text-[15px] text-ink">
               <Icon name="shield" size={18} className="mt-0.5 shrink-0 text-success-ink" />
-              Deine Lerndaten werden lokal in deinem Browser gespeichert. Es gibt kein Konto, keine
-              Anmeldung und keine Übertragung an einen Server.
+              {privacyStatement(storage.cloud)}
             </p>
             {storage.recoveredFromCorruption && (
               <p className="flex items-start gap-2.5 rounded-xl bg-surface-2 p-3 text-sm text-ink-muted">

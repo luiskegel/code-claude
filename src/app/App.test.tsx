@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { STORAGE_KEYS } from '../config/storageKeys';
@@ -128,6 +128,18 @@ describe('App', () => {
   it('weist auf jeder Seite darauf hin, wenn nicht dauerhaft gespeichert werden kann', async () => {
     renderApp({ path: '/', settings: ONBOARDED, persistent: false });
     expect(await screen.findByText(/kein dauerhaftes Speichern/)).toBeInTheDocument();
+  });
+
+  it('verzichtet auf die Warnung, sobald die Sicherung im Claude-Konto greift', async () => {
+    const { store } = renderApp({ path: '/einstellungen', settings: ONBOARDED, persistent: false });
+    expect(await screen.findByText(/kein dauerhaftes Speichern/)).toBeInTheDocument();
+    expect(screen.getByText(/Es gibt kein Konto, keine Anmeldung/)).toBeInTheDocument();
+
+    act(() => store.setCloudStatus('on'));
+    expect(screen.queryByText(/kein dauerhaftes Speichern/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/zusätzlich privat in deinem Claude-Konto gesichert/),
+    ).toBeInTheDocument();
   });
 
   it('meldet fehlgeschlagene Speichervorgänge, ohne die App zu blockieren', async () => {

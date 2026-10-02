@@ -144,4 +144,14 @@ describe('App-Store', () => {
     tabB.reloadFromStorage();
     expect(tabB.getState().progress.lessons.grundstellung?.passed).toBe(true);
   });
+
+  it('behält den Status der Konto-Sicherung beim Nachladen und Zurücksetzen', () => {
+    const store = createAppStore(createMemoryStorage(), true);
+    expect(store.getState().storage.cloud).toBe('off');
+    store.setCloudStatus('on');
+    store.reloadFromStorage();
+    expect(store.getState().storage.cloud).toBe('on');
+    store.resetAll();
+    expect(store.getState().storage.cloud).toBe('on');
+  });
 });
