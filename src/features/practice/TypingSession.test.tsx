@@ -91,6 +91,27 @@ describe('Übungsansicht', () => {
     expect(screen.getByText('Genauigkeit')).toBeInTheDocument();
   });
 
+  it('wertet eingefügten Text nicht als Tippen', () => {
+    const { input, onFinish } = setup();
+    const paste = fireEvent.paste(input);
+    expect(paste).toBe(false); // Standardaktion (Einfügen) wurde verhindert
+    expect(fireEvent.drop(input)).toBe(false);
+
+    // Falls ein Browser trotzdem einfügt, verwirft das Eingabe-Ereignis den Text.
+    fireEvent.input(input, { target: { value: 'as df' }, inputType: 'insertFromPaste' });
+    expect(input).toHaveValue('');
+    expect(onFinish).not.toHaveBeenCalled();
+    expect(screen.getByText('Linker kleiner Finger')).toBeInTheDocument();
+  });
+
+  it('verarbeitet Bildschirmtastaturen ohne Tastencodes über das Eingabe-Ereignis', () => {
+    const { input, onFinish } = setup();
+    for (const char of 'as df') {
+      fireEvent.input(input, { target: { value: char }, inputType: 'insertText' });
+    }
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
   it('pausiert beim Verlassen des Eingabefelds', () => {
     const { input, type } = setup();
     type('a');

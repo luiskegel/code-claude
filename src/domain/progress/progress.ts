@@ -2,7 +2,7 @@ import type { Exercise } from '../exercise/generator';
 import { getLessonById, getNextLesson } from '../lessons/catalog';
 import { evaluateLessonPass, type PassEvaluation } from '../lessons/unlock';
 import type { SessionSummary } from '../typing/engine';
-import { RECORD_MIN_CHARS } from '../typing/metrics';
+import { MAX_PLAUSIBLE_WPM, RECORD_MIN_CHARS } from '../typing/metrics';
 import { toLocalDateKey } from './dates';
 import { EMPTY_STREAK, recordPracticeDay } from './streak';
 import {
@@ -46,9 +46,17 @@ export function createEmptyLessonProgress(): LessonProgress {
   };
 }
 
-/** Zählt die Übung für Bestwerte? Sehr kurze Übungen würden Rekorde verzerren. */
-export function qualifiesForRecords(result: Pick<ExerciseResult, 'typedChars'>): boolean {
-  return result.typedChars >= RECORD_MIN_CHARS;
+/** Liegt die Geschwindigkeit im menschenmöglichen Bereich? */
+export function isPlausibleWpm(wpm: number): boolean {
+  return wpm <= MAX_PLAUSIBLE_WPM;
+}
+
+/**
+ * Zählt die Übung für Bestwerte? Sehr kurze Übungen würden Rekorde verzerren,
+ * unmögliche Geschwindigkeiten stammen nicht vom Tippen.
+ */
+export function qualifiesForRecords(result: Pick<ExerciseResult, 'typedChars' | 'wpm'>): boolean {
+  return result.typedChars >= RECORD_MIN_CHARS && isPlausibleWpm(result.wpm);
 }
 
 function round(value: number, decimals: number): number {
@@ -136,11 +144,12 @@ export function applyExerciseResult(
     previousLessonBestWpm = before.bestWpm;
     previousLessonBestAccuracy = before.bestAccuracy;
     newlyPassed = result.passed && !before.passed;
+    const plausible = isPlausibleWpm(result.wpm);
     const after: LessonProgress = {
       attempts: before.attempts + 1,
       passed: before.passed || result.passed,
-      bestWpm: maxOrNull(before.bestWpm, result.wpm, true),
-      bestAccuracy: maxOrNull(before.bestAccuracy, result.accuracy, true),
+      bestWpm: maxOrNull(before.bestWpm, result.wpm, plausible),
+      bestAccuracy: maxOrNull(before.bestAccuracy, result.accuracy, plausible),
       lastPracticedAt: result.completedAt,
       passedAt: before.passedAt ?? (result.passed ? result.completedAt : null),
     };

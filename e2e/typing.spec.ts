@@ -87,6 +87,21 @@ test.describe('Tastatureingabe', () => {
     ).toBeVisible();
   });
 
+  test('eingefügter Text zählt nicht als Tippen', async ({ page, context, baseURL }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: baseURL });
+    await seedSettings(page);
+    await startLesson(page, 'grundstellung');
+    const text = await exerciseText(page);
+    await page.keyboard.press('f');
+    await page.evaluate((rest) => navigator.clipboard.writeText(rest), text.slice(1));
+    await page.keyboard.press('ControlOrMeta+V');
+    // Die Übung läuft unverändert weiter: nur das getippte „f“ zählt.
+    await expect(page.getByRole('heading', { name: 'Lektion 1 · Grundstellung' })).toBeVisible();
+    await expect(page.locator('.tt-char[data-status="correct"]')).toHaveCount(1);
+    await expect(page.getByText('Nächste Taste')).toBeVisible();
+    expect(await page.evaluate((key) => window.localStorage.getItem(key), PROGRESS_KEY)).toBeNull();
+  });
+
   test('Neu starten setzt die Übung zurück', async ({ page }) => {
     await seedSettings(page);
     await startLesson(page, 'grundstellung');

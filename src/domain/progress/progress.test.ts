@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeSummary } from '../../test/factories';
+import { MAX_PLAUSIBLE_WPM } from '../typing/metrics';
 import {
   applyExerciseResult,
   buildExerciseResult,
@@ -89,6 +90,19 @@ describe('Übungsabschluss', () => {
     const slower = complete(long.progress, 'asdf', { typedChars: 92, wpm: 20 });
     expect(slower.progress.records.bestWpm).toBe(25);
     expect(slower.outcome.isNewBestWpm).toBe(false);
+  });
+
+  it('lässt unmögliche Geschwindigkeiten keine Bestwerte setzen', () => {
+    const real = complete(createEmptyProgress(), 'asdf', { typedChars: 92, wpm: 48 });
+    const impossible = complete(real.progress, 'asdf', { typedChars: 92, wpm: 1800 });
+    expect(impossible.outcome.isNewBestWpm).toBe(false);
+    expect(impossible.progress.records.bestWpm).toBe(48);
+    expect(impossible.progress.lessons.asdf?.bestWpm).toBe(48);
+    // Das Ergebnis selbst bleibt nachvollziehbar im Verlauf.
+    expect(impossible.progress.history.at(-1)?.wpm).toBe(1800);
+
+    const fastHuman = complete(real.progress, 'asdf', { typedChars: 92, wpm: MAX_PLAUSIBLE_WPM });
+    expect(fastHuman.outcome.isNewBestWpm).toBe(true);
   });
 
   it('aktualisiert den Streak beim Abschluss', () => {

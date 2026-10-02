@@ -35,11 +35,11 @@ export function AppShell() {
       <Sidebar />
       <MobileHeader />
       <main ref={mainRef} id="inhalt" tabIndex={-1} className="outline-none lg:pl-64">
+        <StorageNotice />
         <div
           key={location.pathname}
           className="mx-auto w-full max-w-6xl animate-fade-up px-4 pt-6 pb-28 sm:px-6 sm:pt-8 lg:px-10 lg:pt-10 lg:pb-14"
         >
-          <StorageNotice />
           <Outlet />
         </div>
       </main>

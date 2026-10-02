@@ -25,7 +25,6 @@ import {
   formatDays,
   formatDuration,
   formatPracticeTime,
-  formatTime,
   formatWpm,
 } from '../../lib/format';
 import { usePageTitle, useToday } from '../../lib/hooks';
@@ -73,15 +72,17 @@ export function StatisticsPage() {
     );
   }
 
-  // Liegen alle Übungen an einem Tag, beschriftet die Uhrzeit die x-Achse.
-  const singleDay = new Set(series.map((point) => formatDate(point.completedAt))).size <= 1;
+  // Die Punkte stehen gleichmäßig je Übung – die x-Achse zählt deshalb Übungen statt Tage.
+  // Datum und Uhrzeit stehen im Tooltip und in der Tabelle.
+  const firstNumber = Math.max(1, progress.totals.exercises - series.length + 1);
+  const since = series[0] ? formatDate(series[0].completedAt) : '';
   const toPoints = (field: 'wpm' | 'accuracy'): LinePoint[] =>
-    series.map((point) => ({
+    series.map((point, index) => ({
       id: point.resultId,
       value: point[field],
       label: exerciseLabel(point.lessonId),
       date: formatDateTime(point.completedAt),
-      shortDate: singleDay ? formatTime(point.completedAt) : formatDate(point.completedAt),
+      axisLabel: `Nr. ${firstNumber + index}`,
     }));
   const wpmPoints = toPoints('wpm');
   const accuracyPoints = toPoints('accuracy');
@@ -161,7 +162,11 @@ export function StatisticsPage() {
         <CardHeader
           id="entwicklung"
           title="Deine Entwicklung"
-          description={`Die letzten ${series.length} ${series.length === 1 ? 'Übung' : 'Übungen'} – fahre über die Linie für Details.`}
+          description={
+            series.length === 1
+              ? `Bisher eine Übung (${since}) – mit jeder weiteren entsteht hier deine Kurve.`
+              : `Die letzten ${series.length} Übungen seit ${since} – fahre über die Linie für Details.`
+          }
         />
         <div className="grid gap-8 lg:grid-cols-2">
           <LineChart
@@ -217,7 +222,7 @@ export function StatisticsPage() {
               <tbody className="tabular-nums">
                 {series.map((point, index) => (
                   <tr key={point.resultId} className="border-t border-line">
-                    <td className="px-4 py-2 text-ink-muted">{index + 1}</td>
+                    <td className="px-4 py-2 text-ink-muted">{firstNumber + index}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-ink-muted">
                       {formatDateTime(point.completedAt)}
                     </td>

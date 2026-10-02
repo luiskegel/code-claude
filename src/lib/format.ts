@@ -53,13 +53,6 @@ const dateTimeFormatter = new Intl.DateTimeFormat('de-DE', {
   minute: '2-digit',
 });
 
-const timeFormatter = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
-
-export function formatTime(iso: string): string {
-  const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? EMPTY : timeFormatter.format(date);
-}
-
 export function formatDate(iso: string): string {
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? EMPTY : dateFormatter.format(date);

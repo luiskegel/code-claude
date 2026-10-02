@@ -14,6 +14,12 @@ export const MIN_LIVE_WPM_MS = 2_000;
 /** Bestwerte zählen erst ab Übungen dieser Länge, damit kurze Ausreißer keine Rekorde setzen. */
 export const RECORD_MIN_CHARS = 50;
 
+/**
+ * Obergrenze für Bestwerte: Selbst die schnellsten Menschen erreichen kaum 250 WPM. Höhere Werte
+ * entstehen nur durch eingefügten oder diktierten Text und dürfen keine Rekorde setzen.
+ */
+export const MAX_PLAUSIBLE_WPM = 300;
+
 /** WPM = korrekt getippte Zeichen / 5 / vergangene Minuten */
 export function calculateWpm(correctChars: number, durationMs: number): number {
   if (!Number.isFinite(correctChars) || !Number.isFinite(durationMs)) return 0;

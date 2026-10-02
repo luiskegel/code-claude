@@ -8,8 +8,8 @@ export interface LinePoint {
   label: string;
   /** Datum, z. B. „1. Okt., 18:30“ */
   date: string;
-  /** Kurzes Datum für die x-Achse */
-  shortDate: string;
+  /** Beschriftung auf der x-Achse, z. B. „Nr. 12“ */
+  axisLabel: string;
 }
 
 interface LineChartProps {
@@ -19,6 +19,8 @@ interface LineChartProps {
   formatValue: (value: number) => string;
   /** Untergrenze der y-Achse; Standard: 0 (ehrliche Größenverhältnisse) */
   floor?: 'zero' | 'auto';
+  /** Bei floor="auto": Mindestspanne der y-Achse, damit kleine Schwankungen nicht dramatisch wirken */
+  minSpan?: number;
   ceiling?: number;
   activeIndex: number | null;
   onActiveIndexChange: (index: number | null) => void;
@@ -55,6 +57,7 @@ export function LineChart({
   points,
   formatValue,
   floor = 'zero',
+  minSpan = 10,
   ceiling,
   activeIndex,
   onActiveIndexChange,
@@ -64,9 +67,11 @@ export function LineChart({
   const values = points.map((point) => point.value);
   const dataMin = Math.min(...values);
   const dataMax = Math.max(...values);
+  // Beide Kennzahlen werden ganzzahlig angezeigt – die Achse darf daher nur ganze Werte tragen.
   const scale = niceScale(
-    floor === 'zero' ? 0 : Math.max(0, dataMin - 2),
+    floor === 'zero' ? 0 : Math.max(0, Math.min(dataMin - 2, dataMax - minSpan)),
     Math.max(dataMax, floor === 'zero' ? 10 : dataMax),
+    { integer: true },
   );
   const yMax = ceiling !== undefined ? Math.min(scale.max, ceiling) : scale.max;
   const ticks = scale.ticks.filter((tick) => tick <= yMax);
@@ -179,7 +184,7 @@ export function LineChart({
                       : 'middle'
                 }
               >
-                {points[index]?.shortDate}
+                {points[index]?.axisLabel}
               </text>
             ))}
             {areaPath && <path d={areaPath} fill="var(--tf-accent)" opacity={0.1} />}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { interpretKey, type KeyEventLike } from './keyInput';
+import { interpretKey, isForeignInput, type KeyEventLike } from './keyInput';
 
 function key(overrides: Partial<KeyEventLike> & { key: string }): KeyEventLike {
   return { metaKey: false, ctrlKey: false, altKey: false, repeat: false, ...overrides };
@@ -68,5 +68,25 @@ describe('Tasteninterpretation', () => {
   it('überlässt Kompositionen (IME, Bildschirmtastatur) dem Eingabe-Ereignis', () => {
     expect(interpretKey(key({ key: 'Process', isComposing: true }))).toBeNull();
     expect(interpretKey(key({ key: 'Unidentified', keyCode: 229 }))).toBeNull();
+  });
+});
+
+describe('Fremdeingaben', () => {
+  it('erkennt Einfügen, Hineinziehen und automatische Ersetzungen', () => {
+    for (const inputType of [
+      'insertFromPaste',
+      'insertFromDrop',
+      'insertFromYank',
+      'insertFromPasteAsQuotation',
+      'insertReplacementText',
+    ]) {
+      expect(isForeignInput(inputType)).toBe(true);
+    }
+  });
+
+  it('lässt normale Texteingaben durch', () => {
+    for (const inputType of ['insertText', 'insertLineBreak', 'insertCompositionText', undefined]) {
+      expect(isForeignInput(inputType)).toBe(false);
+    }
   });
 });

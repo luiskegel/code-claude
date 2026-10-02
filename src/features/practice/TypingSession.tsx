@@ -32,7 +32,7 @@ import { useMediaQuery } from '../../lib/hooks';
 import { playSound } from '../../lib/sound';
 import { FingerHint } from './FingerHint';
 import { describeError, describeTarget, spokenTarget } from './hints';
-import { interpretKey } from './keyInput';
+import { interpretKey, isForeignInput } from './keyInput';
 import { TextDisplay } from './TextDisplay';
 import { keyIdsForChars } from './usePracticeEnvironment';
 import { useTypingSession, type KeystrokeFeedback } from './useTypingSession';
@@ -167,6 +167,12 @@ export function TypingSession({
       session.backspace(false);
       return;
     }
+    // Eingefügter, hineingezogener oder automatisch ersetzter Text ist kein Tippen –
+    // er würde die Übung in einem Augenblick abschließen und unmögliche WPM-Werte erzeugen.
+    if (isForeignInput(native.inputType)) {
+      event.currentTarget.value = '';
+      return;
+    }
     consumeTextarea(event.currentTarget);
   };
 
@@ -252,6 +258,8 @@ export function TypingSession({
           className="absolute size-px overflow-hidden opacity-0"
           style={{ clipPath: 'inset(50%)' }}
           onKeyDown={handleKeyDown}
+          onPaste={(event) => event.preventDefault()}
+          onDrop={(event) => event.preventDefault()}
           onInput={handleInput}
           onCompositionEnd={(event) => consumeTextarea(event.currentTarget)}
           onFocus={() => setFocused(true)}

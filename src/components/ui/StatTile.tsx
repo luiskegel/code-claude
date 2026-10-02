@@ -24,8 +24,9 @@ export function StatTile({
 }: StatTileProps) {
   return (
     <div className={cn('rounded-2xl border border-line bg-surface p-5 shadow-card', className)}>
-      <dt className="flex items-center gap-2 text-sm font-medium text-ink-muted">
-        {icon && <Icon name={icon} size={17} className={cn('shrink-0', iconClassName)} />}
+      <dt className="flex items-start gap-2 text-sm font-medium text-ink-muted">
+        {/* Oben ausgerichtet, damit das Icon bei umbrechenden Labels neben der ersten Zeile steht. */}
+        {icon && <Icon name={icon} size={17} className={cn('mt-0.5 shrink-0', iconClassName)} />}
         {label}
       </dt>
       <dd className="mt-3">
