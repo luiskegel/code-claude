@@ -31,4 +31,6 @@ window.scrollTo = () => undefined;
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
+  delete document.documentElement.dataset.theme;
+  delete document.documentElement.dataset.motion;
 });

@@ -9,7 +9,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function MobileHeader() {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-canvas/85 px-4 backdrop-blur-md lg:hidden">
+    <header className="sticky top-[env(safe-area-inset-top,0px)] z-30 flex h-14 items-center justify-between border-b border-line bg-canvas/85 px-4 backdrop-blur-md lg:hidden">
       <Link to="/" className="flex items-center gap-2.5 rounded-lg">
         <BrandMark size={28} />
         <span className="text-[16px] font-semibold tracking-tight text-ink">{BRAND.name}</span>

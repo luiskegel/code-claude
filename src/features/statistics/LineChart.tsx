@@ -120,9 +120,11 @@ export function LineChart({
   const tooltipLeft =
     active && activeIndex !== null ? Math.min(Math.max(x(activeIndex), 90), width - 90) : 0;
   const summary =
-    points.length > 0
+    points.length > 1
       ? `${title} der letzten ${points.length} Übungen: zwischen ${formatValue(dataMin)} und ${formatValue(dataMax)} ${unit}, zuletzt ${formatValue(last?.value ?? 0)} ${unit}. Mit den Pfeiltasten einzelne Werte anzeigen.`
-      : title;
+      : last
+        ? `${title} deiner letzten Übung: ${formatValue(last.value)} ${unit}.`
+        : title;
 
   return (
     <figure className="min-w-0">

@@ -71,18 +71,19 @@ Umgebungsvariablen.
 
 ## Befehle
 
-| Befehl               | Zweck                                                       |
-| -------------------- | ----------------------------------------------------------- |
-| `npm run dev`        | Entwicklungsserver mit Hot Reload                           |
-| `npm run build`      | Typprüfung und Produktions-Build nach `dist/`               |
-| `npm run preview`    | Produktions-Build lokal ausliefern                          |
-| `npm run typecheck`  | TypeScript-Prüfung (App, Tests, Konfiguration)              |
-| `npm run lint`       | ESLint                                                      |
-| `npm run format`     | Code mit Prettier formatieren (`format:check` prüft nur)    |
-| `npm test`           | Unit- und Komponententests (Vitest)                         |
-| `npm run test:watch` | Tests im Watch-Modus                                        |
-| `npm run test:e2e`   | Ende-zu-Ende-Tests (Playwright) gegen den Produktions-Build |
-| `npm run check`      | Typprüfung, Lint, Tests und Build in einem Schritt          |
+| Befehl                   | Zweck                                                                    |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `npm run dev`            | Entwicklungsserver mit Hot Reload                                        |
+| `npm run build`          | Typprüfung und Produktions-Build nach `dist/`                            |
+| `npm run preview`        | Produktions-Build lokal ausliefern                                       |
+| `npm run typecheck`      | TypeScript-Prüfung (App, Tests, Konfiguration)                           |
+| `npm run lint`           | ESLint                                                                   |
+| `npm run format`         | Code mit Prettier formatieren (`format:check` prüft nur)                 |
+| `npm test`               | Unit- und Komponententests (Vitest)                                      |
+| `npm run test:watch`     | Tests im Watch-Modus                                                     |
+| `npm run test:e2e`       | Ende-zu-Ende-Tests (Playwright) gegen den Produktions-Build              |
+| `npm run check`          | Typprüfung, Lint, Tests und Build in einem Schritt                       |
+| `npm run build:artifact` | Eigenständige Seite für Claude-Artefakte (`dist-artifact/typeflow.html`) |
 
 ## Build und Hosting
 
@@ -96,6 +97,19 @@ Weil die App echte Pfade wie `/lernen/asdf` verwendet, muss der Server unbekannt
 - **Netlify:** Datei `public/_redirects` mit `/* /index.html 200`
 - **Vercel:** `vercel.json` mit `{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }`
 - **nginx:** `try_files $uri /index.html;`
+
+### Als Claude-Artefakt
+
+`npm run build:artifact` erzeugt `dist-artifact/typeflow.html`: eine einzelne Seite mit
+eingebetteten Stilen und Skripten, so wie Claude-Artefakte sie erwarten. Das HTML-Grundgerüst
+liefert der Host. Im Vergleich zur normalen Website gibt es drei Unterschiede:
+
+- Die App navigiert im Arbeitsspeicher, weil der Artefakt-Rahmen keine eigenen Pfade erlaubt.
+  Nach dem Neuladen startet sie auf der Übersicht.
+- Der Fortschritt liegt wie gewohnt im LocalStorage, und zwar getrennt für jede Person, die das
+  Artefakt öffnet. Ohne nutzbaren Speicher läuft die App weiter und zeigt einen Hinweis.
+- Die Einstellung „System“ folgt dem Farbschema des Betrachters. „Hell“ und „Dunkel“ gelten
+  wie gewohnt.
 
 ## Tests
 
@@ -323,8 +337,11 @@ Robustheit:
   Controls, Fortschrittsbalken, Modals (natives `<dialog>`), Toasts, Kennzahlen-Kacheln, Badges.
 - **Bewegung:** Dezente Übergänge, abschaltbar in den Einstellungen. `prefers-reduced-motion`
   wird immer respektiert.
-- **Kein Aufblitzen:** Ein kleines Skript in `index.html` setzt Farbschema und Bewegungsmodus,
-  bevor die Seite gezeichnet wird.
+- **Farbschema:** „Hell“ und „Dunkel“ setzen `data-theme` am `<html>`-Element. Bei „System“
+  fehlt das Attribut und das CSS folgt `prefers-color-scheme` – oder einem `data-theme`, das eine
+  einbettende Seite selbst setzt.
+- **Kein Aufblitzen:** Ein kleines Skript in `index.html` setzt ein explizit gewähltes
+  Farbschema und den Bewegungsmodus, bevor die Seite gezeichnet wird.
 
 ## Barrierefreiheit
 

@@ -45,9 +45,12 @@ export function DashboardPage() {
   const streakDays = getActiveStreak(progress.streak, today);
   const practicedToday = hasPracticedToday(progress.streak, today);
   const hasHistory = progress.history.length > 0;
-  const recentHint = hasHistory
-    ? `Ø der letzten ${Math.min(RECENT_WINDOW, progress.history.length)} Übungen`
-    : 'Noch keine Übung';
+  const recentCount = Math.min(RECENT_WINDOW, progress.history.length);
+  const recentHint = !hasHistory
+    ? 'Noch keine Übung'
+    : recentCount === 1
+      ? 'aus deiner letzten Übung'
+      : `Ø der letzten ${recentCount} Übungen`;
 
   return (
     <div className="space-y-6">

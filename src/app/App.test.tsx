@@ -162,4 +162,22 @@ describe('App', () => {
     await user.click(await screen.findByText('Dunkel', { selector: 'label *, label' }));
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
   });
+
+  it('überlässt das Farbschema bei „System“ dem Gerät oder der einbettenden Seite', async () => {
+    const user = userEvent.setup();
+    // Eine einbettende Seite (z. B. ein Claude-Artefakt) hat das Attribut bereits gesetzt.
+    document.documentElement.dataset.theme = 'dark';
+    renderApp({ path: '/einstellungen', settings: { ...ONBOARDED, theme: 'system' } });
+    const label = (name: string) => screen.findByText(name, { selector: 'label *, label' });
+
+    await label('System');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+
+    await user.click(await label('Hell'));
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
+
+    // Zurück auf „System“: Die App entfernt ihr eigenes Attribut wieder.
+    await user.click(await label('System'));
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBeUndefined());
+  });
 });

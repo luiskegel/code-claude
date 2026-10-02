@@ -29,6 +29,11 @@ export function AppShell() {
       <a
         href="#inhalt"
         className="sr-only z-50 rounded-xl bg-accent px-4 py-2 font-medium text-on-accent focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        onClick={(event) => {
+          // Fokus per Skript statt Sprungmarke: Die URL bleibt unverändert, auch eingebettet.
+          event.preventDefault();
+          mainRef.current?.focus();
+        }}
       >
         Zum Inhalt springen
       </a>

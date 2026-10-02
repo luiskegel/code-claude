@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" data-theme="light">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -12,29 +12,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>%BRAND_NAME% – %BRAND_TAGLINE%</title>
     <script>
-      // Setzt das Farbschema vor dem ersten Rendern, damit nichts aufflackert.
+      // Setzt ein explizit gewähltes Farbschema vor dem ersten Rendern, damit nichts aufflackert.
+      // Bei „System“ bleibt data-theme unberührt: Dann entscheidet prefers-color-scheme im CSS.
       (function () {
         var root = document.documentElement;
-        var theme = 'system';
-        var motion = true;
         try {
           var raw = window.localStorage.getItem('%SETTINGS_KEY%');
-          if (raw) {
-            var settings = JSON.parse(raw);
-            if (settings && ['light', 'dark', 'system'].indexOf(settings.theme) !== -1) {
-              theme = settings.theme;
-            }
-            if (settings && settings.animationsEnabled === false) motion = false;
+          var settings = raw ? JSON.parse(raw) : null;
+          if (settings && (settings.theme === 'light' || settings.theme === 'dark')) {
+            root.setAttribute('data-theme', settings.theme);
+          }
+          if (settings && settings.animationsEnabled === false) {
+            root.setAttribute('data-motion', 'reduced');
           }
         } catch (error) {
           // Kein Zugriff auf LocalStorage – Systemeinstellung verwenden.
         }
-        var prefersDark =
-          window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var dark = theme === 'dark' || (theme === 'system' && prefersDark);
-        root.setAttribute('data-theme', dark ? 'dark' : 'light');
-        root.style.colorScheme = dark ? 'dark' : 'light';
-        if (!motion) root.setAttribute('data-motion', 'reduced');
       })();
     </script>
   </head>

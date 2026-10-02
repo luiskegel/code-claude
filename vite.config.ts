@@ -23,22 +23,29 @@ function htmlPlaceholders(): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // Modus „artifact“ erzeugt ein einziges Skript mit relativen Pfaden – daraus baut
+  // scripts/build-artifact.mjs eine eigenständige Seite für Claude-Artefakte.
+  base: mode === 'artifact' ? './' : '/',
   plugins: [react(), tailwindcss(), htmlPlaceholders()],
-  build: {
-    rolldownOptions: {
-      output: {
-        // Bibliotheken ändern sich selten – eigener Chunk, damit Browser sie länger cachen können.
-        codeSplitting: {
-          groups: [{ name: 'vendor', test: /[\\/]node_modules[\\/]/ }],
+  build:
+    mode === 'artifact'
+      ? // Absichtlich ein einziges Skript, da es eingebettet wird – die Größenwarnung entfällt.
+        { outDir: 'dist-artifact', modulePreload: false, chunkSizeWarningLimit: 700 }
+      : {
+          rolldownOptions: {
+            output: {
+              // Bibliotheken ändern sich selten – eigener Chunk, damit Browser sie länger cachen.
+              codeSplitting: {
+                groups: [{ name: 'vendor', test: /[\\/]node_modules[\\/]/ }],
+              },
+            },
+          },
         },
-      },
-    },
-  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     restoreMocks: true,
   },
-});
+}));

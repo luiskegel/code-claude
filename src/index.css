@@ -1,7 +1,18 @@
 @import 'tailwindcss';
 
-/* Dark Mode folgt dem data-theme-Attribut (gesetzt aus Einstellung „Hell / Dunkel / System“). */
-@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+/* Dark Mode: explizite Wahl per data-theme-Attribut („Hell“ / „Dunkel“). Bei „System“ fehlt das
+   Attribut, dann entscheidet prefers-color-scheme. So folgt die App auch einer einbettenden Seite,
+   die das Attribut selbst setzt (z. B. als Claude-Artefakt). */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+}
 
 /* ── Design-Tokens ─────────────────────────────────────────────────────
    Nur semantische Farben – die Standardpalette ist bewusst deaktiviert,
@@ -125,8 +136,7 @@
 }
 
 /* ── Hell ─────────────────────────────────────────────────────────────── */
-:root,
-[data-theme='light'] {
+:root {
   color-scheme: light;
   --tf-canvas: #f5f5f7;
   --tf-surface: #ffffff;
@@ -183,78 +193,90 @@
 }
 
 /* ── Dunkel ───────────────────────────────────────────────────────────── */
-[data-theme='dark'] {
-  color-scheme: dark;
-  --tf-canvas: #0f0f11;
-  --tf-surface: #18181b;
-  --tf-surface-2: #202024;
-  --tf-surface-3: #2a2a2f;
-  --tf-line: #2b2b31;
-  --tf-line-strong: #3b3b43;
-  --tf-ink: #f4f4f6;
-  --tf-ink-muted: #a1a1aa;
-  --tf-ink-subtle: #71717a;
-  --tf-accent: #4a66e6;
-  --tf-accent-hover: #405ee0;
-  --tf-accent-soft: #1e2442;
-  --tf-accent-ink: #9fb1ff;
-  --tf-on-accent: #ffffff;
-  --tf-success: #34c26f;
-  --tf-success-soft: #13261b;
-  --tf-success-ink: #6ee09a;
-  --tf-danger: #f26b6b;
-  --tf-danger-soft: #2d1718;
-  --tf-danger-ink: #ff9d9d;
-  --tf-danger-strong: #c53030;
-  --tf-warning: #f0a63a;
-  --tf-warning-soft: #2c2213;
-  --tf-warning-ink: #f7c977;
-  --tf-streak: #ff8a4c;
-  --tf-focus: #8ea2ff;
-  --tf-selection: rgb(142 162 255 / 0.28);
+:root {
+  @variant dark {
+    color-scheme: dark;
+    --tf-canvas: #0f0f11;
+    --tf-surface: #18181b;
+    --tf-surface-2: #202024;
+    --tf-surface-3: #2a2a2f;
+    --tf-line: #2b2b31;
+    --tf-line-strong: #3b3b43;
+    --tf-ink: #f4f4f6;
+    --tf-ink-muted: #a1a1aa;
+    --tf-ink-subtle: #71717a;
+    --tf-accent: #4a66e6;
+    --tf-accent-hover: #405ee0;
+    --tf-accent-soft: #1e2442;
+    --tf-accent-ink: #9fb1ff;
+    --tf-on-accent: #ffffff;
+    --tf-success: #34c26f;
+    --tf-success-soft: #13261b;
+    --tf-success-ink: #6ee09a;
+    --tf-danger: #f26b6b;
+    --tf-danger-soft: #2d1718;
+    --tf-danger-ink: #ff9d9d;
+    --tf-danger-strong: #c53030;
+    --tf-warning: #f0a63a;
+    --tf-warning-soft: #2c2213;
+    --tf-warning-ink: #f7c977;
+    --tf-streak: #ff8a4c;
+    --tf-focus: #8ea2ff;
+    --tf-selection: rgb(142 162 255 / 0.28);
 
-  --tf-finger-pinky: #a48bff;
-  --tf-finger-pinky-soft: #2a2342;
-  --tf-finger-pinky-on: #111114;
-  --tf-finger-ring: #6aa6ff;
-  --tf-finger-ring-soft: #1a2840;
-  --tf-finger-ring-on: #111114;
-  --tf-finger-middle: #3fd3a1;
-  --tf-finger-middle-soft: #142c25;
-  --tf-finger-middle-on: #111114;
-  --tf-finger-index: #f5b04a;
-  --tf-finger-index-soft: #33270f;
-  --tf-finger-index-on: #111114;
-  --tf-finger-thumb: #a1a8b3;
-  --tf-finger-thumb-soft: #26282d;
-  --tf-finger-thumb-on: #111114;
+    --tf-finger-pinky: #a48bff;
+    --tf-finger-pinky-soft: #2a2342;
+    --tf-finger-pinky-on: #111114;
+    --tf-finger-ring: #6aa6ff;
+    --tf-finger-ring-soft: #1a2840;
+    --tf-finger-ring-on: #111114;
+    --tf-finger-middle: #3fd3a1;
+    --tf-finger-middle-soft: #142c25;
+    --tf-finger-middle-on: #111114;
+    --tf-finger-index: #f5b04a;
+    --tf-finger-index-soft: #33270f;
+    --tf-finger-index-on: #111114;
+    --tf-finger-thumb: #a1a8b3;
+    --tf-finger-thumb-soft: #26282d;
+    --tf-finger-thumb-on: #111114;
 
-  --tf-kb-frame: #1c1c20;
-  --tf-kb-key: #2a2a30;
-  --tf-kb-key-edge: #3a3a42;
-  --tf-kb-label: #d4d4da;
+    --tf-kb-frame: #1c1c20;
+    --tf-kb-key: #2a2a30;
+    --tf-kb-key-edge: #3a3a42;
+    --tf-kb-label: #d4d4da;
 
-  --tf-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.02);
-  --tf-shadow-raised: 0 8px 24px -8px rgb(0 0 0 / 0.6);
-  --tf-shadow-pop: 0 24px 64px -16px rgb(0 0 0 / 0.75);
+    --tf-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.02);
+    --tf-shadow-raised: 0 8px 24px -8px rgb(0 0 0 / 0.6);
+    --tf-shadow-pop: 0 24px 64px -16px rgb(0 0 0 / 0.75);
+  }
+}
+
+/* ── Seitengrund ──────────────────────────────────────────────────────────
+   Bewusst außerhalb der Layer: Ungeschichtete Stile einer einbettenden Seite (etwa das Reset
+   eines Claude-Artefakts) würden Layer-Stile sonst immer überschreiben. */
+html {
+  background-color: var(--tf-canvas);
+  color: var(--tf-ink);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--tf-ink);
+  background-color: var(--tf-canvas);
 }
 
 /* ── Basis ────────────────────────────────────────────────────────────── */
 @layer base {
   html {
-    background-color: var(--tf-canvas);
-    color: var(--tf-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-  }
-
-  body {
-    min-height: 100dvh;
-    font-family: var(--font-sans);
-    background-color: var(--tf-canvas);
   }
 
   :focus-visible {

@@ -104,13 +104,18 @@ test.describe('Navigation und Robustheit', () => {
     await seedSettings(page, { theme: 'light' });
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
-    const toggle = page.getByRole('button', { name: /Darstellung: Hell/ });
-    await toggle.click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const html = page.locator('html');
+    const background = () =>
+      page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
+    await page.getByRole('button', { name: /Darstellung: Hell/ }).click();
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await expect.poll(background).toBe('rgb(15, 15, 17)');
     await page.getByRole('button', { name: /Darstellung: Dunkel/ }).click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    // „System“ setzt kein Attribut – das Farbschema folgt dem Gerät.
+    await expect(html).not.toHaveAttribute('data-theme');
+    await expect.poll(background).toBe('rgb(245, 245, 247)');
     await page.emulateMedia({ colorScheme: 'dark' });
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect.poll(background).toBe('rgb(15, 15, 17)');
   });
 
   test('Skip-Link führt per Tastatur zum Inhalt', async ({ page }) => {
