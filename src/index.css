@@ -1,0 +1,541 @@
+@import 'tailwindcss';
+
+/* Dark Mode folgt dem data-theme-Attribut (gesetzt aus Einstellung „Hell / Dunkel / System“). */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ── Design-Tokens ─────────────────────────────────────────────────────
+   Nur semantische Farben – die Standardpalette ist bewusst deaktiviert,
+   damit jede Farbe in beiden Themes funktioniert. */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI Variable Text', 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-display:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI Variable Display',
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono',
+    Consolas, 'Liberation Mono', monospace;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-fade-up: fade-up 420ms var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 240ms ease-out both;
+  --animate-scale-in: scale-in 280ms var(--ease-out-soft) both;
+  --animate-pop: pop 360ms var(--ease-out-soft) both;
+  --animate-shake-soft: shake-soft 260ms ease-out;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.06);
+    }
+    100% {
+      transform: none;
+    }
+  }
+  @keyframes shake-soft {
+    0%,
+    100% {
+      transform: none;
+    }
+    30% {
+      transform: translateX(-2px);
+    }
+    70% {
+      transform: translateX(2px);
+    }
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--tf-canvas);
+  --color-surface: var(--tf-surface);
+  --color-surface-2: var(--tf-surface-2);
+  --color-surface-3: var(--tf-surface-3);
+  --color-line: var(--tf-line);
+  --color-line-strong: var(--tf-line-strong);
+  --color-ink: var(--tf-ink);
+  --color-ink-muted: var(--tf-ink-muted);
+  --color-ink-subtle: var(--tf-ink-subtle);
+  --color-accent: var(--tf-accent);
+  --color-accent-hover: var(--tf-accent-hover);
+  --color-accent-soft: var(--tf-accent-soft);
+  --color-accent-ink: var(--tf-accent-ink);
+  --color-on-accent: var(--tf-on-accent);
+  --color-success: var(--tf-success);
+  --color-success-soft: var(--tf-success-soft);
+  --color-success-ink: var(--tf-success-ink);
+  --color-danger: var(--tf-danger);
+  --color-danger-soft: var(--tf-danger-soft);
+  --color-danger-ink: var(--tf-danger-ink);
+  --color-danger-strong: var(--tf-danger-strong);
+  --color-warning: var(--tf-warning);
+  --color-warning-soft: var(--tf-warning-soft);
+  --color-warning-ink: var(--tf-warning-ink);
+  --color-streak: var(--tf-streak);
+
+  --color-finger-pinky: var(--tf-finger-pinky);
+  --color-finger-ring: var(--tf-finger-ring);
+  --color-finger-middle: var(--tf-finger-middle);
+  --color-finger-index: var(--tf-finger-index);
+  --color-finger-thumb: var(--tf-finger-thumb);
+
+  --shadow-card: var(--tf-shadow-card);
+  --shadow-raised: var(--tf-shadow-raised);
+  --shadow-pop: var(--tf-shadow-pop);
+}
+
+/* ── Hell ─────────────────────────────────────────────────────────────── */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --tf-canvas: #f5f5f7;
+  --tf-surface: #ffffff;
+  --tf-surface-2: #f2f2f5;
+  --tf-surface-3: #e9e9ee;
+  --tf-line: #e5e5ea;
+  --tf-line-strong: #d2d2d8;
+  --tf-ink: #1d1d1f;
+  --tf-ink-muted: #5c5c63;
+  --tf-ink-subtle: #86868b;
+  --tf-accent: #3e5ce0;
+  --tf-accent-hover: #3450cc;
+  --tf-accent-soft: #ecf0fd;
+  --tf-accent-ink: #3651d4;
+  --tf-on-accent: #ffffff;
+  --tf-success: #1f8a4d;
+  --tf-success-soft: #e6f4ec;
+  --tf-success-ink: #17703d;
+  --tf-danger: #d23c3c;
+  --tf-danger-soft: #fdeeee;
+  --tf-danger-ink: #b42f2f;
+  --tf-danger-strong: #c53030;
+  --tf-warning: #c27803;
+  --tf-warning-soft: #fdf4e3;
+  --tf-warning-ink: #8a5400;
+  --tf-streak: #e8590c;
+  --tf-focus: #3e5ce0;
+  --tf-selection: rgb(62 92 224 / 0.18);
+
+  --tf-finger-pinky: #7c5ce6;
+  --tf-finger-pinky-soft: #efeafd;
+  --tf-finger-pinky-on: #ffffff;
+  --tf-finger-ring: #2f74d9;
+  --tf-finger-ring-soft: #e5effc;
+  --tf-finger-ring-on: #ffffff;
+  --tf-finger-middle: #0d8260;
+  --tf-finger-middle-soft: #def4eb;
+  --tf-finger-middle-on: #ffffff;
+  --tf-finger-index: #f0a030;
+  --tf-finger-index-soft: #fdf0dc;
+  --tf-finger-index-on: #1d1d1f;
+  --tf-finger-thumb: #646b78;
+  --tf-finger-thumb-soft: #edeef2;
+  --tf-finger-thumb-on: #ffffff;
+
+  --tf-kb-frame: #e9e9ee;
+  --tf-kb-key: #ffffff;
+  --tf-kb-key-edge: #d6d6dd;
+  --tf-kb-label: #3a3a3f;
+
+  --tf-shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.04);
+  --tf-shadow-raised: 0 2px 6px rgb(16 24 40 / 0.06), 0 8px 24px -6px rgb(16 24 40 / 0.1);
+  --tf-shadow-pop: 0 24px 64px -16px rgb(16 24 40 / 0.28), 0 4px 12px rgb(16 24 40 / 0.08);
+}
+
+/* ── Dunkel ───────────────────────────────────────────────────────────── */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --tf-canvas: #0f0f11;
+  --tf-surface: #18181b;
+  --tf-surface-2: #202024;
+  --tf-surface-3: #2a2a2f;
+  --tf-line: #2b2b31;
+  --tf-line-strong: #3b3b43;
+  --tf-ink: #f4f4f6;
+  --tf-ink-muted: #a1a1aa;
+  --tf-ink-subtle: #71717a;
+  --tf-accent: #4a66e6;
+  --tf-accent-hover: #405ee0;
+  --tf-accent-soft: #1e2442;
+  --tf-accent-ink: #9fb1ff;
+  --tf-on-accent: #ffffff;
+  --tf-success: #34c26f;
+  --tf-success-soft: #13261b;
+  --tf-success-ink: #6ee09a;
+  --tf-danger: #f26b6b;
+  --tf-danger-soft: #2d1718;
+  --tf-danger-ink: #ff9d9d;
+  --tf-danger-strong: #c53030;
+  --tf-warning: #f0a63a;
+  --tf-warning-soft: #2c2213;
+  --tf-warning-ink: #f7c977;
+  --tf-streak: #ff8a4c;
+  --tf-focus: #8ea2ff;
+  --tf-selection: rgb(142 162 255 / 0.28);
+
+  --tf-finger-pinky: #a48bff;
+  --tf-finger-pinky-soft: #2a2342;
+  --tf-finger-pinky-on: #111114;
+  --tf-finger-ring: #6aa6ff;
+  --tf-finger-ring-soft: #1a2840;
+  --tf-finger-ring-on: #111114;
+  --tf-finger-middle: #3fd3a1;
+  --tf-finger-middle-soft: #142c25;
+  --tf-finger-middle-on: #111114;
+  --tf-finger-index: #f5b04a;
+  --tf-finger-index-soft: #33270f;
+  --tf-finger-index-on: #111114;
+  --tf-finger-thumb: #a1a8b3;
+  --tf-finger-thumb-soft: #26282d;
+  --tf-finger-thumb-on: #111114;
+
+  --tf-kb-frame: #1c1c20;
+  --tf-kb-key: #2a2a30;
+  --tf-kb-key-edge: #3a3a42;
+  --tf-kb-label: #d4d4da;
+
+  --tf-shadow-card: 0 0 0 1px rgb(255 255 255 / 0.02);
+  --tf-shadow-raised: 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --tf-shadow-pop: 0 24px 64px -16px rgb(0 0 0 / 0.75);
+}
+
+/* ── Basis ────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    background-color: var(--tf-canvas);
+    color: var(--tf-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    background-color: var(--tf-canvas);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--tf-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--tf-selection);
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* Reduzierte Bewegung: Systemeinstellung oder App-Einstellung „Animationen aus“. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Komponenten ──────────────────────────────────────────────────────── */
+@layer components {
+  /* Fingerfarben je Taste/Finger */
+  [data-finger-kind='pinky'] {
+    --key-strong: var(--tf-finger-pinky);
+    --key-soft: var(--tf-finger-pinky-soft);
+    --key-on: var(--tf-finger-pinky-on);
+  }
+  [data-finger-kind='ring'] {
+    --key-strong: var(--tf-finger-ring);
+    --key-soft: var(--tf-finger-ring-soft);
+    --key-on: var(--tf-finger-ring-on);
+  }
+  [data-finger-kind='middle'] {
+    --key-strong: var(--tf-finger-middle);
+    --key-soft: var(--tf-finger-middle-soft);
+    --key-on: var(--tf-finger-middle-on);
+  }
+  [data-finger-kind='index'] {
+    --key-strong: var(--tf-finger-index);
+    --key-soft: var(--tf-finger-index-soft);
+    --key-on: var(--tf-finger-index-on);
+  }
+  [data-finger-kind='thumb'] {
+    --key-strong: var(--tf-finger-thumb);
+    --key-soft: var(--tf-finger-thumb-soft);
+    --key-on: var(--tf-finger-thumb-on);
+  }
+
+  /* Virtuelle Tastatur (SVG) */
+  .kb-frame {
+    fill: var(--tf-kb-frame);
+  }
+  .kb-key {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform 90ms ease-out,
+      opacity 200ms ease-out;
+  }
+  .kb-key-shape {
+    fill: var(--tf-kb-key);
+    stroke: var(--tf-kb-key-edge);
+    stroke-width: 1;
+    transition:
+      fill 160ms ease-out,
+      stroke 160ms ease-out;
+  }
+  .kb-label {
+    fill: var(--tf-kb-label);
+    font-family: var(--font-sans);
+    pointer-events: none;
+    user-select: none;
+  }
+  .kb-label-sub {
+    fill: var(--tf-ink-subtle);
+  }
+  .kb-bump {
+    stroke: var(--tf-ink-subtle);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  /* Fingerfarben dezent anzeigen – nur für Tasten ohne besonderen Zustand,
+     damit Zieltaste, Umschalttaste und Einführung immer kräftig gefärbt sind. */
+  .kb[data-tint='fingers'] .kb-key[data-finger-kind]:not([data-state]) .kb-key-shape {
+    fill: var(--key-soft);
+  }
+
+  /* Nicht gelernte Tasten treten zurück */
+  .kb-key[data-dimmed='true'] {
+    opacity: 0.38;
+  }
+
+  /* Aktuelle Zieltaste */
+  .kb-key[data-state='target'] .kb-key-shape,
+  .kb-key[data-state='intro'] .kb-key-shape {
+    fill: var(--key-strong, var(--tf-accent));
+    stroke: var(--key-strong, var(--tf-accent));
+  }
+  .kb-key[data-state='target'] .kb-label,
+  .kb-key[data-state='intro'] .kb-label,
+  .kb-key[data-state='target'] .kb-label-sub,
+  .kb-key[data-state='intro'] .kb-label-sub {
+    fill: var(--key-on, var(--tf-on-accent));
+  }
+  .kb-key[data-state='target'] .kb-bump,
+  .kb-key[data-state='intro'] .kb-bump {
+    stroke: var(--key-on, var(--tf-on-accent));
+  }
+  .kb-key[data-state='target'] {
+    filter: drop-shadow(
+      0 2px 6px color-mix(in srgb, var(--key-strong, var(--tf-accent)) 45%, transparent)
+    );
+  }
+  /* Umschalttaste, die zusätzlich gehalten werden muss */
+  .kb-key[data-state='modifier'] .kb-key-shape {
+    fill: var(--key-soft, var(--tf-accent-soft));
+    stroke: var(--key-strong, var(--tf-accent));
+    stroke-width: 2;
+    stroke-dasharray: 5 3;
+  }
+  .kb-key[data-state='modifier'] .kb-label {
+    fill: var(--tf-ink);
+  }
+
+  /* Gedrückte Taste */
+  .kb-key[data-pressed='true'] {
+    transform: translateY(1.5px) scale(0.965);
+  }
+  .kb-key[data-pressed='error'] .kb-key-shape {
+    stroke: var(--tf-danger);
+    stroke-width: 2.5;
+  }
+
+  /* Tastenbeherrschung */
+  .kb-key[data-mastery='mastered'] .kb-key-shape {
+    fill: var(--tf-success-soft);
+    stroke: color-mix(in srgb, var(--tf-success) 55%, transparent);
+  }
+  .kb-key[data-mastery='learning'] .kb-key-shape {
+    fill: var(--tf-accent-soft);
+    stroke: color-mix(in srgb, var(--tf-accent) 45%, transparent);
+  }
+  .kb-key[data-mastery='weak'] .kb-key-shape {
+    fill: var(--tf-warning-soft);
+    stroke: color-mix(in srgb, var(--tf-warning) 70%, transparent);
+  }
+  .kb-key[data-mastery='locked'] {
+    opacity: 0.5;
+  }
+  .kb-key[data-selected='true'] .kb-key-shape {
+    stroke: var(--tf-ink);
+    stroke-width: 2.5;
+  }
+  .kb-mastery-icon {
+    pointer-events: none;
+  }
+  .kb-mastery-icon[data-level='mastered'] {
+    fill: var(--tf-success-ink);
+  }
+  .kb-mastery-icon[data-level='weak'] {
+    fill: var(--tf-warning-ink);
+  }
+  .kb-mastery-icon[data-level='learning'] {
+    fill: var(--tf-accent-ink);
+  }
+  .kb-mastery-icon[data-level='locked'] {
+    fill: var(--tf-ink-subtle);
+  }
+
+  .kb-divider {
+    stroke: var(--tf-line-strong);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 5;
+    fill: none;
+  }
+
+  /* Handgrafik */
+  .hand-part {
+    fill: var(--tf-surface-2);
+    stroke: var(--tf-line-strong);
+    stroke-width: 1.5;
+    transition:
+      fill 180ms ease-out,
+      stroke 180ms ease-out;
+  }
+  .hand-finger[data-tint='true'] .hand-part {
+    fill: var(--key-soft);
+    stroke: color-mix(in srgb, var(--key-strong) 45%, transparent);
+  }
+  .hand-finger[data-active='true'] .hand-part {
+    fill: var(--key-strong);
+    stroke: var(--key-strong);
+  }
+  .hand-palm {
+    fill: var(--tf-surface-2);
+    stroke: var(--tf-line-strong);
+    stroke-width: 1.5;
+  }
+  .hand-nail {
+    fill: var(--tf-surface);
+    opacity: 0.55;
+  }
+  .hand-finger[data-active='true'] .hand-nail {
+    fill: #ffffff;
+    opacity: 0.4;
+  }
+
+  /* Übungstext */
+  .tt-char {
+    border-radius: 0.2em;
+    transition:
+      color 90ms ease-out,
+      background-color 90ms ease-out;
+  }
+  .tt-char[data-status='pending'] {
+    color: var(--tf-ink);
+  }
+  .tt-char[data-status='correct'] {
+    color: var(--tf-ink-subtle);
+  }
+  .tt-char[data-status='corrected'] {
+    color: var(--tf-ink-subtle);
+    text-decoration: underline dotted var(--tf-warning) 2px;
+    text-underline-offset: 0.3em;
+  }
+  .tt-char[data-status='incorrect'] {
+    color: var(--tf-danger-ink);
+    background-color: var(--tf-danger-soft);
+    text-decoration: underline wavy var(--tf-danger) 1.5px;
+    text-underline-offset: 0.3em;
+  }
+  .tt-char[data-current='true'] {
+    color: var(--tf-ink);
+    background-color: var(--tf-accent-soft);
+    box-shadow: inset 0 -0.14em 0 var(--tf-accent);
+  }
+  .tt-char[data-current='true'][data-status='incorrect'] {
+    color: var(--tf-danger-ink);
+    background-color: var(--tf-danger-soft);
+    box-shadow: inset 0 -0.14em 0 var(--tf-danger);
+    text-decoration: none;
+  }
+  .tt-glyph {
+    color: var(--tf-ink-subtle);
+  }
+  .tt-char[data-current='true'] .tt-glyph {
+    color: var(--tf-accent-ink);
+  }
+  .tt-char[data-status='incorrect'] .tt-glyph {
+    color: var(--tf-danger-ink);
+  }
+}

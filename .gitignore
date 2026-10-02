@@ -1,0 +1,20 @@
+# Abhängigkeiten
+node_modules
+
+# Build-Ausgaben
+dist
+*.tsbuildinfo
+
+# Tests
+coverage
+playwright-report
+test-results
+blob-report
+
+# Editor & System
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.local
+*.log
