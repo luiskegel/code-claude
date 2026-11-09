@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-ink-950 text-slate-200 antialiased;
+    overflow-x: clip;
+    font-feature-settings: 'cv11', 'ss01';
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, rgba(34, 197, 94, 0.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(59, 130, 246, 0.05), transparent 60%);
+    background-attachment: fixed;
+  }
+  h1, h2, h3, h4 {
+    @apply text-white tracking-tight;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/70 ring-offset-2 ring-offset-ink-950;
+  }
+  ::selection {
+    @apply bg-accent/30 text-white;
+  }
+  input[type='number']::-webkit-inner-spin-button {
+    opacity: 0.4;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-white/[0.06] bg-ink-900/80 shadow-card backdrop-blur-sm;
+  }
+  .card-pad {
+    @apply p-5 sm:p-6;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-ink-950 hover:bg-accent-glow;
+  }
+  .btn-secondary {
+    @apply btn border border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08];
+  }
+  .btn-ghost {
+    @apply btn text-slate-300 hover:bg-white/[0.06] hover:text-white;
+  }
+  .btn-danger {
+    @apply btn border border-loss/30 bg-loss/10 text-rose-200 hover:bg-loss/20;
+  }
+  .input {
+    @apply w-full rounded-xl border border-white/10 bg-ink-950/60 px-3 py-2.5 text-sm text-white placeholder:text-slate-500
+      transition focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-400;
+  }
+  .prose-lesson p {
+    @apply leading-relaxed text-slate-300;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
+  .card { border: 1px solid #ccc; background: white; box-shadow: none; }
+}
+
+.recharts-tooltip-wrapper { outline: none; }
