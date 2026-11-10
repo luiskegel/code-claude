@@ -21,6 +21,7 @@ import { Badge, Callout, Card, Rich, cx } from '@/components/ui/ui';
 import { QuizRunner } from '@/components/quiz/QuizRunner';
 import { LessonWidgetView, WIDGET_TITLES } from '@/components/widgets/LessonWidget';
 import { NotFound } from './NotFound';
+import { LessonReaderPanel, ReadFromButton, useReaderForLesson, type Reader } from '@/components/LessonReader';
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -28,6 +29,15 @@ function SectionTitle({ icon, children }: { icon: React.ReactNode; children: Rea
       <span className="text-accent">{icon}</span>
       {children}
     </h2>
+  );
+}
+
+/** Markiert einen Abschnitt für das Vorlesen (Hervorhebung + Sprungziel). */
+function Readable({ reader, id, children }: { reader: Reader; id: string; children: React.ReactNode }) {
+  return (
+    <div data-read-id={id} className={cx('scroll-mt-24 rounded-2xl transition-shadow', reader.isReading(id) && 'ring-2 ring-accent/50 ring-offset-2 ring-offset-ink-950')}>
+      {children}
+    </div>
   );
 }
 
@@ -46,7 +56,7 @@ function useStudyTimer(active: boolean) {
 export function LessonPage() {
   const { lessonId } = useParams();
   const found = lessonId ? getLesson(lessonId) : undefined;
-  const { state, actions } = useStore();
+  const { actions } = useStore();
   const [showSolution, setShowSolution] = useState(false);
   useStudyTimer(!!found);
 
@@ -56,7 +66,22 @@ export function LessonPage() {
   }, [found, actions]);
 
   if (!found) return <NotFound />;
+  return <LessonView key={found.lesson.id} found={found} showSolution={showSolution} setShowSolution={setShowSolution} />;
+}
+
+function LessonView({
+  found,
+  showSolution,
+  setShowSolution,
+}: {
+  found: NonNullable<ReturnType<typeof getLesson>>;
+  showSolution: boolean;
+  setShowSolution: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const { state, actions } = useStore();
   const { lesson, module, index } = found;
+  const reader = useReaderForLesson(lesson);
+  const readerActive = reader.state === 'starting' || reader.state === 'speaking' || reader.state === 'paused';
   const done = !!state.progress.completedLessons[lesson.id];
   const exerciseDone = !!state.progress.exercisesDone[lesson.id];
   const miniQuiz = module.quiz.filter((q) => q.lesson === index);
@@ -65,7 +90,7 @@ export function LessonPage() {
   const bestQuiz = state.progress.lessonQuiz[lesson.id];
 
   return (
-    <article className="mx-auto max-w-4xl">
+    <article className={cx('mx-auto max-w-4xl', readerActive && 'pb-24')}>
       <nav className="mb-3 flex flex-wrap gap-1 text-sm text-slate-500" aria-label="Brotkrümel">
         <Link to="/kurs" className="hover:text-white">
           Mein Aktienkurs
@@ -75,7 +100,7 @@ export function LessonPage() {
           Modul {module.number}: {module.title}
         </Link>
       </nav>
-      <header className="mb-6">
+      <header className="mb-6 scroll-mt-24" data-read-id="intro">
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <Badge tone="blue">
             Lektion {index + 1} von {module.lessons.length}
@@ -90,8 +115,10 @@ export function LessonPage() {
           )}
         </div>
         <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{lesson.title}</h1>
-        <p className="mt-3 text-base leading-relaxed text-slate-300 sm:text-lg">{lesson.intro}</p>
+        <p className={cx('mt-3 rounded-lg text-base leading-relaxed text-slate-300 transition sm:text-lg', reader.isReading('intro') && 'bg-accent/[0.06]')}>{lesson.intro}</p>
       </header>
+
+      <LessonReaderPanel lesson={lesson} reader={reader} />
 
       {lesson.riskNote && (
         <div className="mb-6">
@@ -105,9 +132,16 @@ export function LessonPage() {
         <Card as="section">
           <SectionTitle icon={<BookA className="h-5 w-5" />}>Verständliche Erklärung</SectionTitle>
           <div className="space-y-6">
-            {lesson.sections.map((s) => (
-              <section key={s.heading} className="prose-lesson">
-                <h3 className="mb-2 text-base font-semibold">{s.heading}</h3>
+            {lesson.sections.map((s, si) => (
+              <section
+                key={s.heading}
+                data-read-id={`s${si}`}
+                className={cx('prose-lesson -mx-3 scroll-mt-24 rounded-xl px-3 py-1 transition-colors', reader.isReading(`s${si}`) && 'bg-accent/[0.06]')}
+              >
+                <h3 className="mb-2 flex items-center gap-2 text-base font-semibold">
+                  {s.heading}
+                  <ReadFromButton reader={reader} id={`s${si}`} label={s.heading} />
+                </h3>
                 <div className="space-y-3">
                   {s.paragraphs.map((p, i) => (
                     <p key={i}>
@@ -133,6 +167,7 @@ export function LessonPage() {
           </div>
         </Card>
 
+        <Readable reader={reader} id="examples">
         <Card as="section">
           <SectionTitle icon={<Lightbulb className="h-5 w-5" />}>Ausführliche Beispiele</SectionTitle>
           <div className="grid gap-3">
@@ -144,6 +179,7 @@ export function LessonPage() {
             ))}
           </div>
         </Card>
+        </Readable>
 
         {lesson.widget && (
           <Card as="section">
@@ -153,6 +189,7 @@ export function LessonPage() {
         )}
 
         <div className="grid gap-6 md:grid-cols-2">
+          <Readable reader={reader} id="practice">
           <Card as="section">
             <SectionTitle icon={<Wrench className="h-5 w-5" />}>Praktische Anwendung</SectionTitle>
             <ul className="space-y-2 text-sm text-slate-300">
@@ -164,6 +201,8 @@ export function LessonPage() {
               ))}
             </ul>
           </Card>
+          </Readable>
+          <Readable reader={reader} id="mistakes">
           <Card as="section">
             <SectionTitle icon={<AlertTriangle className="h-5 w-5" />}>Typische Anfängerfehler</SectionTitle>
             <ul className="space-y-2 text-sm text-slate-300">
@@ -175,8 +214,10 @@ export function LessonPage() {
               ))}
             </ul>
           </Card>
+          </Readable>
         </div>
 
+        <Readable reader={reader} id="terms">
         <Card as="section">
           <SectionTitle icon={<BookA className="h-5 w-5" />}>Wichtige Fachbegriffe</SectionTitle>
           <dl className="grid gap-3 sm:grid-cols-2">
@@ -191,7 +232,9 @@ export function LessonPage() {
             Alle Begriffe im Aktien-Lexikon <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Card>
+        </Readable>
 
+        <Readable reader={reader} id="summary">
         <Card as="section" className="border-accent/15">
           <SectionTitle icon={<Target className="h-5 w-5" />}>Zusammenfassung</SectionTitle>
           <ul className="space-y-2 text-sm text-slate-200">
@@ -203,7 +246,9 @@ export function LessonPage() {
             ))}
           </ul>
         </Card>
+        </Readable>
 
+        <Readable reader={reader} id="exercise">
         <Card as="section">
           <SectionTitle icon={<PenLine className="h-5 w-5" />}>Praktische Übung: {lesson.exercise.title}</SectionTitle>
           <p className="text-sm leading-relaxed text-slate-300">{lesson.exercise.task}</p>
@@ -231,6 +276,7 @@ export function LessonPage() {
             </button>
           </div>
         </Card>
+        </Readable>
 
         <Card as="section">
           <SectionTitle icon={<ListChecks className="h-5 w-5" />}>Kleiner Wissenstest</SectionTitle>

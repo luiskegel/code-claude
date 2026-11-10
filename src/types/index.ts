@@ -223,6 +223,10 @@ export interface Settings {
   dataProvider: 'simulated' | 'proxy';
   proxyBaseUrl: string;
   showDisclaimers: boolean;
+  /** Vorlesen: Stimme, Tempo (0,7–1,5) und ob der Text mitläuft */
+  ttsVoice: 'buttery' | 'airy' | 'glassy' | 'rounded';
+  ttsRate: number;
+  ttsFollow: boolean;
 }
 
 export interface AppState {
