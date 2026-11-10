@@ -191,6 +191,9 @@ export interface PortfolioState {
   transactions: Transaction[];
   history: { day: number; value: number; cash: number }[];
   feePerTrade: number;
+  /** Summen ausgelagerter (gekürzter) alter Transaktionen, damit Kennzahlen stimmen. */
+  archivedRealized?: number;
+  archivedDividends?: number;
 }
 
 // ---------- Watchlist ----------

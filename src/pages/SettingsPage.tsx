@@ -3,6 +3,7 @@ import { Download, Lock, Plug, Settings, Trash2, Upload } from 'lucide-react';
 import { useStore } from '@/store/AppStore';
 import { exportState, parseImport } from '@/lib/storage';
 import { IS_ARTIFACT } from '@/lib/env';
+import { SyncBadge } from '@/components/SyncBadge';
 import { ProxyProvider } from '@/lib/market/provider';
 import { Callout, Card, NumberField, PageHeader, TextField, cx } from '@/components/ui/ui';
 
@@ -150,7 +151,14 @@ export function SettingsPage() {
 
         <Card>
           <h2 className="mb-1 font-semibold">Datensicherung</h2>
-          <p className="mb-4 text-sm text-slate-400">Dein Fortschritt liegt nur in diesem Browser. Sichere ihn als Datei, um ihn auf ein anderes Gerät zu übertragen.</p>
+          {IS_ARTIFACT ? (
+            <div className="mb-4 space-y-2 text-sm text-slate-400">
+              <SyncBadge detailed />
+              <p>Lektionen, Tests, Punkte, Lernzeit, Depot, Watchlist, Notizen und Einstellungen werden automatisch privat in deinem Claude-Konto gespeichert und sind auf allen Geräten verfügbar, auf denen du dieses Artefakt öffnest. Zusätzlich kannst du eine Sicherung kopieren.</p>
+            </div>
+          ) : (
+            <p className="mb-4 text-sm text-slate-400">Dein Fortschritt liegt nur in diesem Browser. Sichere ihn als Datei, um ihn auf ein anderes Gerät zu übertragen.</p>
+          )}
           <div className="flex flex-wrap gap-2">
             {IS_ARTIFACT ? (
               <button className="btn-secondary" onClick={copyExport}>
@@ -197,7 +205,11 @@ export function SettingsPage() {
             <Lock className="h-4 w-4 text-accent" /> Datenschutz & Verantwortung
           </h2>
           <ul className="list-disc space-y-1 pl-5 text-sm text-slate-400">
-            <li>Alle Daten (Fortschritt, Depot, Watchlist, Notizen) werden ausschließlich lokal in deinem Browser (LocalStorage) gespeichert. Es gibt kein Konto und keine Übertragung an Dritte.</li>
+            {IS_ARTIFACT ? (
+              <li>Alle Daten (Fortschritt, Depot, Watchlist, Notizen) werden in einem privaten Bereich der Artefakt-Datenbank deines Claude-Kontos gespeichert. Nur du kannst sie lesen – auch Personen, mit denen du das Artefakt teilst, sehen deinen Stand nicht. Eine Kopie liegt zusätzlich im Browser.</li>
+            ) : (
+              <li>Alle Daten (Fortschritt, Depot, Watchlist, Notizen) werden ausschließlich lokal in deinem Browser (LocalStorage) gespeichert. Es gibt kein Konto und keine Übertragung an Dritte.</li>
+            )}
             <li>Es werden keine Tracking- oder Analyse-Dienste verwendet.</li>
             <li>Externe Links öffnen Webseiten Dritter (z. B. BaFin, EZB, Deutsche Börse). Dort gelten deren Datenschutzbestimmungen.</li>
             <li>MY STOCK ACADEMY ist keine Anlageberatung, führt keine echten Handelsaufträge aus und verspricht keine Gewinne.</li>

@@ -1,6 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
+import { CloudSync, type SyncStatus } from '@/lib/cloudSync';
+import { IS_ARTIFACT } from '@/lib/env';
 import type { ActivityEntry, AppState, PortfolioState, Settings, WatchlistItem } from '@/types';
 import { defaultState, loadState, saveState } from '@/lib/storage';
+
+const hasLocalData = (s: AppState) =>
+  Object.keys(s.progress.completedLessons).length > 0 || s.progress.activity.length > 0 || s.portfolio.transactions.length > 0 || s.watchlist.length > 0 || !!s.settings.name;
 import { addStudyDay, PASS_THRESHOLD, POINTS } from '@/lib/progress';
 import { advanceDays, buy, createPortfolio, sell, totalValue } from '@/lib/portfolio';
 
@@ -56,6 +61,8 @@ function snapshot(p: PortfolioState): PortfolioState {
 
 function useAppStoreValue() {
   const [state, dispatch] = useReducer(reducer, undefined, loadState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const saveTimer = useRef<number>();
 
   useEffect(() => {
@@ -64,12 +71,44 @@ function useAppStoreValue() {
     return () => window.clearTimeout(saveTimer.current);
   }, [state]);
 
+  // ---------- Speicherung im Claude-Konto (Artefakt-Version) ----------
+  const [sync, setSync] = useState<{ status: SyncStatus; detail?: string }>({ status: IS_ARTIFACT ? 'connecting' : 'local' });
+  const cloud = useRef<CloudSync | null>(null);
+  const cloudTimer = useRef<number>();
+
+  useEffect(() => {
+    if (!IS_ARTIFACT) return;
+    const c = new CloudSync((status, detail) => setSync({ status, detail }));
+    cloud.current = c;
+    let active = true;
+    c.connect().then((saved) => {
+      if (!active) return;
+      if (saved) dispatch({ type: 'replace', state: saved });
+      else if (c.connected && hasLocalData(stateRef.current)) c.save(stateRef.current); // vorhandenen Browser-Stand übernehmen
+    });
+    const flushNow = () => {
+      if (document.visibilityState === 'hidden') cloud.current?.save(stateRef.current);
+    };
+    document.addEventListener('visibilitychange', flushNow);
+    window.addEventListener('pagehide', flushNow);
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', flushNow);
+      window.removeEventListener('pagehide', flushNow);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cloud.current?.connected) return;
+    window.clearTimeout(cloudTimer.current);
+    cloudTimer.current = window.setTimeout(() => cloud.current?.save(state), 1500);
+    return () => window.clearTimeout(cloudTimer.current);
+  }, [state, sync.status]);
+
   useEffect(() => {
     document.documentElement.classList.toggle('reduce-motion', state.settings.reduceMotion);
   }, [state.settings.reduceMotion]);
 
-  const stateRef = useRef(state);
-  stateRef.current = state;
 
   const updateSettings = useCallback((patch: Partial<Settings>) => dispatch({ type: 'settings', patch }), []);
 
@@ -280,7 +319,7 @@ function useAppStoreValue() {
     ],
   );
 
-  return { state, actions };
+  return { state, actions, sync };
 }
 
 type StoreValue = ReturnType<typeof useAppStoreValue>;

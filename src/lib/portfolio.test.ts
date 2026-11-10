@@ -9,6 +9,7 @@ import {
   sell,
   totalValue,
   TradeError,
+  MAX_TRANSACTIONS,
 } from './portfolio';
 import { simCandles, simDividendOn, simPrice, SIM_STOCKS } from './market/simulatedMarket';
 
@@ -84,6 +85,18 @@ describe('Virtuelles Depot', () => {
     expect(p.day).toBe(3);
     expect(dividendsReceived(p)).toBeCloseTo(15);
     expect(p.history).toHaveLength(4);
+  });
+});
+
+describe('Begrenzung der Transaktionsliste', () => {
+  it('kürzt alte Transaktionen, Summen bleiben korrekt', () => {
+    let p = createPortfolio(1_000_000, 0);
+    for (let i = 0; i < MAX_TRANSACTIONS; i++) {
+      p = buy(p, 'NWE', 1, fixed({ 0: 10 }));
+      p = sell(p, 'NWE', 1, fixed({ 0: 11 }));
+    }
+    expect(p.transactions.length).toBe(MAX_TRANSACTIONS);
+    expect(realizedPnL(p)).toBeCloseTo(MAX_TRANSACTIONS * 1);
   });
 });
 

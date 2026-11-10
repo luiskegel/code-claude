@@ -10,6 +10,21 @@ export const DEFAULT_FEE = 1;
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 const r2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
 
+export const MAX_TRANSACTIONS = 400;
+
+/** Kürzt die Transaktionsliste; Summen der entfernten Einträge bleiben erhalten. */
+export function trimTransactions(state: PortfolioState): PortfolioState {
+  if (state.transactions.length <= MAX_TRANSACTIONS) return state;
+  const keep = state.transactions.slice(0, MAX_TRANSACTIONS);
+  const drop = state.transactions.slice(MAX_TRANSACTIONS);
+  return {
+    ...state,
+    transactions: keep,
+    archivedRealized: r2((state.archivedRealized ?? 0) + drop.reduce((s, t) => s + (t.realizedPnL ?? 0), 0)),
+    archivedDividends: r2((state.archivedDividends ?? 0) + drop.filter((t) => t.type === 'DIVIDEND').reduce((s, t) => s + t.amount, 0)),
+  };
+}
+
 export function createPortfolio(startCapital = START_CAPITAL, feePerTrade = DEFAULT_FEE): PortfolioState {
   return {
     cash: startCapital,
@@ -55,7 +70,7 @@ export function buy(state: PortfolioState, symbol: string, shares: number, price
     fee: state.feePerTrade,
     amount: -cost,
   };
-  return { ...state, cash: r2(state.cash - cost), positions, transactions: [tx, ...state.transactions] };
+  return trimTransactions({ ...state, cash: r2(state.cash - cost), positions, transactions: [tx, ...state.transactions] });
 }
 
 export function sell(state: PortfolioState, symbol: string, shares: number, price: PriceFn = simPrice): PortfolioState {
@@ -83,7 +98,7 @@ export function sell(state: PortfolioState, symbol: string, shares: number, pric
     amount: proceeds,
     realizedPnL: realized,
   };
-  return { ...state, cash: r2(state.cash + proceeds), positions, transactions: [tx, ...state.transactions] };
+  return trimTransactions({ ...state, cash: r2(state.cash + proceeds), positions, transactions: [tx, ...state.transactions] });
 }
 
 export function positionValue(pos: Position, day: number, price: PriceFn = simPrice) {
@@ -98,11 +113,11 @@ export function totalValue(state: PortfolioState, price: PriceFn = simPrice, day
 }
 
 export function realizedPnL(state: PortfolioState): number {
-  return r2(state.transactions.reduce((s, t) => s + (t.realizedPnL ?? 0), 0));
+  return r2((state.archivedRealized ?? 0) + state.transactions.reduce((s, t) => s + (t.realizedPnL ?? 0), 0));
 }
 
 export function dividendsReceived(state: PortfolioState): number {
-  return r2(state.transactions.filter((t) => t.type === 'DIVIDEND').reduce((s, t) => s + t.amount, 0));
+  return r2((state.archivedDividends ?? 0) + state.transactions.filter((t) => t.type === 'DIVIDEND').reduce((s, t) => s + t.amount, 0));
 }
 
 /**
@@ -142,8 +157,8 @@ export function advanceDays(
     s.history.push({ day, value: totalValue(s, price, day), cash });
   }
   // Historie begrenzen, damit der Speicher klein bleibt
-  if (s.history.length > 2000) s.history = s.history.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
-  return s;
+  while (s.history.length > 1200) s.history = s.history.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
+  return trimTransactions(s);
 }
 
 export function knownSymbols(): string[] {

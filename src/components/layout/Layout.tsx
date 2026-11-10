@@ -27,6 +27,8 @@ import { useStore } from '@/store/AppStore';
 import { currentLevel } from '@/lib/progress';
 import { TOTAL_LESSONS } from '@/data/curriculum';
 import { ProgressBar, cx } from '@/components/ui/ui';
+import { SyncBadge } from '@/components/SyncBadge';
+import { IS_ARTIFACT } from '@/lib/env';
 
 interface NavItem {
   to: string;
@@ -112,6 +114,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <p className="mt-1.5 text-[11px] text-slate-500">
           {lvl.done} von {TOTAL_LESSONS} Lektionen · {state.progress.points} Punkte
         </p>
+        <div className="mt-2 border-t border-white/[0.06] pt-2">
+          <SyncBadge />
+        </div>
       </div>
     </div>
   );
@@ -171,7 +176,7 @@ export function Layout({ children }: { children: ReactNode }) {
           MY STOCK ACADEMY ist eine Lernplattform und <strong className="text-slate-400">keine Anlageberatung</strong>. Es werden keine
           Kauf- oder Verkaufsempfehlungen gegeben und keine echten Handelsaufträge ausgeführt. Alle Kurse im virtuellen Depot sind
           simuliert und beziehen sich auf fiktive Unternehmen. Geldanlagen in Wertpapiere sind mit Risiken bis hin zum Totalverlust
-          verbunden. Dein Lernfortschritt wird ausschließlich lokal in deinem Browser gespeichert.
+          verbunden. {IS_ARTIFACT ? 'Dein Lernfortschritt wird privat in deinem Claude-Konto gespeichert – nur du kannst ihn sehen.' : 'Dein Lernfortschritt wird ausschließlich lokal in deinem Browser gespeichert.'}
         </footer>
       </main>
     </div>
