@@ -2,9 +2,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  // `--mode artifact`: alles in eine einzige HTML-Datei bündeln (für Claude-Artefakte)
+  plugins: mode === 'artifact' ? [react(), viteSingleFile()] : [react()],
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },
   },
@@ -15,20 +17,23 @@ export default defineConfig({
       '/api': 'http://localhost:8787',
     },
   },
-  build: {
-    chunkSizeWarningLimit: 900,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
+  build:
+    mode === 'artifact'
+      ? { outDir: 'dist-artifact', chunkSizeWarningLimit: 3000 }
+      : {
+          chunkSizeWarningLimit: 900,
+          rollupOptions: {
+            output: {
+              manualChunks: {
+                react: ['react', 'react-dom', 'react-router-dom'],
+                charts: ['recharts'],
+              },
+            },
+          },
         },
-      },
-    },
-  },
   test: {
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts'],
   },
-});
+}));

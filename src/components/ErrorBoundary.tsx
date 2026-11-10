@@ -27,9 +27,9 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
             <button className="btn-primary" onClick={() => this.setState({ error: null })}>
               Erneut versuchen
             </button>
-            <a className="btn-secondary" href="#/">
-              Zum Dashboard
-            </a>
+            <button className="btn-secondary" onClick={() => window.location.reload()}>
+              Neu laden
+            </button>
           </div>
         </div>
       );

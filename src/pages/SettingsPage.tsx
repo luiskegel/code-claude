@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Download, Lock, Plug, Settings, Trash2, Upload } from 'lucide-react';
 import { useStore } from '@/store/AppStore';
 import { exportState, parseImport } from '@/lib/storage';
+import { IS_ARTIFACT } from '@/lib/env';
 import { ProxyProvider } from '@/lib/market/provider';
 import { Callout, Card, NumberField, PageHeader, TextField, cx } from '@/components/ui/ui';
 
@@ -36,6 +37,18 @@ export function SettingsPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [testMsg, setTestMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [testing, setTesting] = useState(false);
+  const [exportText, setExportText] = useState<string | null>(null);
+
+  const copyExport = async () => {
+    const text = exportState(state);
+    setExportText(text);
+    try {
+      await navigator.clipboard.writeText(text);
+      setMsg({ ok: true, text: 'Sicherung in die Zwischenablage kopiert. Füge sie in eine Textdatei ein und speichere sie als .json.' });
+    } catch {
+      setMsg({ ok: true, text: 'Markiere den Text unten und kopiere ihn (Strg/Cmd + C) in eine Textdatei.' });
+    }
+  };
 
   const download = () => {
     const blob = new Blob([exportState(state)], { type: 'application/json' });
@@ -111,14 +124,17 @@ export function SettingsPage() {
               ] as const
             ).map(([id, label, hint]) => (
               <label key={id} className={cx('flex cursor-pointer gap-3 rounded-xl border p-3', s.dataProvider === id ? 'border-accent/40 bg-accent/[0.05]' : 'border-white/[0.06]')}>
-                <input type="radio" name="provider" className="mt-1 accent-green-500" checked={s.dataProvider === id} onChange={() => actions.updateSettings({ dataProvider: id })} />
+                <input type="radio" name="provider" className="mt-1 accent-green-500" disabled={IS_ARTIFACT && id === 'proxy'} checked={s.dataProvider === id} onChange={() => actions.updateSettings({ dataProvider: id })} />
                 <span>
                   <span className="text-sm text-white">{label}</span>
                   <span className="block text-xs text-slate-500">{hint}</span>
                 </span>
               </label>
             ))}
-            {s.dataProvider === 'proxy' && (
+            {IS_ARTIFACT && (
+              <Callout tone="info">In der Claude-Artefakt-Version sind Abrufe externer Server gesperrt. Der Marktdaten-Proxy ist nur in der lokal installierten Version nutzbar (siehe README).</Callout>
+            )}
+            {s.dataProvider === 'proxy' && !IS_ARTIFACT && (
               <>
                 <TextField label="Proxy-Adresse" value={s.proxyBaseUrl} onChange={(v) => actions.updateSettings({ proxyBaseUrl: v.trim() })} placeholder="leer = gleiche Adresse (/api), z. B. http://localhost:8787" />
                 {!validUrl(s.proxyBaseUrl) && <p className="text-xs text-rose-300">Bitte eine gültige http(s)-Adresse eingeben.</p>}
@@ -136,9 +152,15 @@ export function SettingsPage() {
           <h2 className="mb-1 font-semibold">Datensicherung</h2>
           <p className="mb-4 text-sm text-slate-400">Dein Fortschritt liegt nur in diesem Browser. Sichere ihn als Datei, um ihn auf ein anderes Gerät zu übertragen.</p>
           <div className="flex flex-wrap gap-2">
-            <button className="btn-secondary" onClick={download}>
-              <Download className="h-4 w-4" /> Sicherung herunterladen
-            </button>
+            {IS_ARTIFACT ? (
+              <button className="btn-secondary" onClick={copyExport}>
+                <Download className="h-4 w-4" /> Sicherung kopieren
+              </button>
+            ) : (
+              <button className="btn-secondary" onClick={download}>
+                <Download className="h-4 w-4" /> Sicherung herunterladen
+              </button>
+            )}
             <button className="btn-secondary" onClick={() => fileRef.current?.click()}>
               <Upload className="h-4 w-4" /> Sicherung wiederherstellen
             </button>
@@ -155,6 +177,9 @@ export function SettingsPage() {
             />
           </div>
           {msg && <p className={cx('mt-3 text-sm', msg.ok ? 'text-accent-glow' : 'text-rose-300')}>{msg.text}</p>}
+          {exportText && (
+            <textarea id="export-json" readOnly className="input mt-3 font-mono text-xs" rows={6} value={exportText} onFocus={(e) => e.target.select()} aria-label="Sicherung als Text" />
+          )}
         </Card>
 
         <Card>

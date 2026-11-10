@@ -3,6 +3,7 @@ import { Printer } from 'lucide-react';
 import { useStore } from '@/store/AppStore';
 import { NumberField, ProgressBar, ResultRow, TextField, Callout, cx } from '@/components/ui/ui';
 import { fmtEur, fmtPct } from '@/lib/format';
+import { IS_ARTIFACT } from '@/lib/env';
 
 export const ANALYSIS_STEPS = [
   { id: 's1', title: 'Unternehmen auswählen', hint: 'Welches Unternehmen? Warum interessiert es dich? Ausgangsfrage?' },
@@ -131,9 +132,11 @@ export function InvestmentPlanWidget() {
           <TextField key={f.key} label={f.label} value={p[f.key] ?? ''} onChange={(v) => actions.setPlanField(f.key, v)} placeholder={f.placeholder} multiline />
         ))}
       </div>
-      <button className="btn-secondary no-print" onClick={() => window.print()}>
-        <Printer className="h-4 w-4" /> Plan drucken / als PDF speichern
-      </button>
+      {!IS_ARTIFACT && (
+        <button className="btn-secondary no-print" onClick={() => window.print()}>
+          <Printer className="h-4 w-4" /> Plan drucken / als PDF speichern
+        </button>
+      )}
     </div>
   );
 }

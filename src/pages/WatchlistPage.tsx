@@ -8,6 +8,7 @@ import { ProxyProvider, SimulatedProvider, type Quote } from '@/lib/market/provi
 import { SIM_STOCKS } from '@/lib/market/simulatedMarket';
 import { Callout, Card, CHART, DataBadge, NumberField, PageHeader, TextField, cx } from '@/components/ui/ui';
 import { fmtDate, fmtEur, fmtPct } from '@/lib/format';
+import { IS_ARTIFACT } from '@/lib/env';
 
 type QuoteState = { status: 'idle' | 'loading' | 'ok' | 'error'; quote?: Quote; history?: { label: string; close: number }[]; error?: string };
 
@@ -20,7 +21,7 @@ function useQuote(item: WatchlistItem): QuoteState {
     let cancelled = false;
     const provider = item.simulatedSymbol
       ? new SimulatedProvider(() => day)
-      : dataProvider === 'proxy' && proxyBaseUrl
+      : !IS_ARTIFACT && dataProvider === 'proxy' && proxyBaseUrl
         ? new ProxyProvider(proxyBaseUrl)
         : null;
     const symbol = item.simulatedSymbol ?? item.symbol;

@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
+import { IS_ARTIFACT } from '@/lib/env';
 import { Layout } from '@/components/layout/Layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Dashboard } from '@/pages/Dashboard';
@@ -34,9 +35,12 @@ const page = (el: ReactNode) => (
   </ErrorBoundary>
 );
 
+// Im Artefakt keine #/-Adressen (werden dort nicht unterstützt) – Navigation im Speicher.
+const Router = IS_ARTIFACT ? MemoryRouter : HashRouter;
+
 export default function App() {
   return (
-    <HashRouter>
+    <Router>
       <Layout>
         <Routes>
           <Route path="/" element={page(<Dashboard />)} />
@@ -61,6 +65,6 @@ export default function App() {
           <Route path="*" element={page(<NotFound />)} />
         </Routes>
       </Layout>
-    </HashRouter>
+    </Router>
   );
 }

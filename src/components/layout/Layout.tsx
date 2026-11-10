@@ -142,7 +142,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Mobile-Topbar */}
-      <div className="no-print sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.05] bg-ink-900/90 px-4 py-3 backdrop-blur lg:hidden">
+      <div style={{ top: 'env(safe-area-inset-top, 0px)' }} className="no-print sticky z-30 flex items-center justify-between border-b border-white/[0.05] bg-ink-900/90 px-4 py-3 backdrop-blur lg:hidden">
         <button className="btn-ghost -ml-2 px-2" onClick={() => setOpen(true)} aria-label="Menü öffnen" aria-expanded={open}>
           <Menu className="h-5 w-5" />
         </button>
