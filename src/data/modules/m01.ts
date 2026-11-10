@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M01 } from '../quizzes/hard1';
 
 export const m01: Module = {
   id: 'm01',
@@ -275,20 +276,7 @@ export const m01: Module = {
       widget: 'index-weights',
     },
   ],
-  quiz: [
-    { id: 'm01-q1', type: 'mc', lesson: 0, question: 'Was erwirbst du, wenn du eine Aktie kaufst?', options: ['Einen Kredit an das Unternehmen', 'Einen Anteil am Eigenkapital des Unternehmens', 'Ein Recht auf feste Zinsen', 'Eine Garantie auf Wertsteigerung'], answer: 1, explanation: 'Eine Aktie verbrieft einen Anteil am Eigenkapital – du wirst Miteigentümer. Feste Zinsen gibt es bei Anleihen, eine Garantie gibt es nicht.' },
-    { id: 'm01-q2', type: 'tf', lesson: 0, question: 'Wenn du über deinen Broker eine DAX-Aktie kaufst, fließt dein Geld in der Regel direkt an das Unternehmen.', answer: 1, explanation: 'Falsch. Du kaufst am Sekundärmarkt von einem anderen Anleger. Nur bei Börsengängen oder Kapitalerhöhungen (Primärmarkt) erhält das Unternehmen Geld.' },
-    { id: 'm01-q3', type: 'mc', lesson: 0, question: 'Welcher Grund spricht NICHT für einen Börsengang?', options: ['Kapitalbeschaffung', 'Frühe Investoren können Anteile verkaufen', 'Wegfall aller Veröffentlichungspflichten', 'Höhere Bekanntheit'], answer: 2, explanation: 'Das Gegenteil ist der Fall: Börsennotierte Unternehmen haben deutlich mehr Veröffentlichungspflichten (Geschäftsberichte, Ad-hoc-Meldungen).' },
-    { id: 'm01-q4', type: 'mc', lesson: 1, question: 'Im Orderbuch wollen deutlich mehr Anleger kaufen als verkaufen. Was passiert tendenziell mit dem Kurs?', options: ['Er steigt', 'Er fällt', 'Er bleibt unverändert', 'Der Handel wird eingestellt'], answer: 0, explanation: 'Übersteigt die Nachfrage das Angebot, müssen Käufer höhere Preise bieten – der Kurs steigt.' },
-    { id: 'm01-q5', type: 'case', lesson: 1, question: 'Ein Unternehmen meldet 12 % Gewinnwachstum. Erwartet wurden 20 %. Die Aktie fällt um 6 %. Was ist die wahrscheinlichste Erklärung?', options: ['Der Markt hat einen Fehler gemacht', 'Die Zahlen waren schlechter als erwartet; die höheren Erwartungen waren schon eingepreist', 'Gewinnwachstum ist immer schlecht für Aktien', 'Die Börse war an dem Tag geschlossen'], answer: 1, explanation: 'Kurse spiegeln Erwartungen wider. Wenn Ergebnisse hinter den Erwartungen zurückbleiben, kann eine Aktie trotz Wachstum fallen.' },
-    { id: 'm01-q6', type: 'mc', lesson: 1, question: 'Was ist der Briefkurs (Ask)?', options: ['Der Preis, zu dem du sofort verkaufen kannst', 'Der Preis, zu dem du sofort kaufen kannst', 'Der Schlusskurs vom Vortag', 'Der Durchschnittskurs des Jahres'], answer: 1, explanation: 'Der Briefkurs ist der niedrigste Verkaufspreis im Orderbuch – zu diesem Preis kannst du kaufen. Der Geldkurs (Bid) ist der Preis, zu dem du verkaufen kannst.' },
-    { id: 'm01-q7', type: 'tf', lesson: 1, question: 'Steigende Leitzinsen können Aktienkurse belasten, weil sichere Anlagen attraktiver werden.', answer: 0, explanation: 'Richtig. Höhere Zinsen erhöhen die Attraktivität von Tagesgeld und Anleihen und verteuern Kredite für Unternehmen.' },
-    { id: 'm01-q8', type: 'mc', lesson: 2, question: 'Wie viele Unternehmen enthält der DAX seit September 2021?', options: ['30', '40', '50', '100'], answer: 1, explanation: 'Der DAX wurde 2021 von 30 auf 40 Unternehmen erweitert.' },
-    { id: 'm01-q9', type: 'calc', lesson: 2, question: 'Ein Index besteht aus A (Gewicht 70 %) und B (30 %). A steigt um 10 %, B fällt um 10 %. Wie verändert sich der Index?', options: ['0 %', '+4 %', '+7 %', '−3 %'], answer: 1, explanation: '0,7 × 10 % + 0,3 × (−10 %) = 7 % − 3 % = +4 %.' },
-    { id: 'm01-q10', type: 'mc', lesson: 2, question: 'Was unterscheidet einen Performanceindex von einem Kursindex?', options: ['Er enthält mehr Unternehmen', 'Dividenden werden rechnerisch reinvestiert', 'Er wird nur einmal im Jahr berechnet', 'Er enthält nur Technologiewerte'], answer: 1, explanation: 'In einem Performanceindex wie dem DAX werden Dividenden reinvestiert. Ein Kursindex wie der S&P 500 zeigt nur die Kursveränderungen.' },
-    { id: 'm01-q11', type: 'mc', lesson: 2, question: 'Welcher Index gilt als wichtigster Gradmesser des breiten US-Aktienmarkts?', options: ['Dow Jones (30 Werte)', 'S&P 500', 'TecDAX', 'Euro Stoxx 50'], answer: 1, explanation: 'Der S&P 500 umfasst rund 500 große US-Unternehmen und ist marktkapitalisierungsgewichtet – deutlich repräsentativer als der preisgewichtete Dow Jones mit nur 30 Werten.' },
-    { id: 'm01-q12', type: 'tf', lesson: 2, question: 'In einem nach Marktkapitalisierung gewichteten Index haben große Unternehmen mehr Einfluss als kleine.', answer: 0, explanation: 'Richtig. Das Gewicht hängt vom (frei handelbaren) Börsenwert ab.' },
-  ],
+  quiz: QUIZ_M01,
   sources: [
     { label: 'Deutsche Börse – Wissen & Indizes', url: 'https://www.deutsche-boerse.com' },
     { label: 'Börse Frankfurt – Wissen', url: 'https://www.boerse-frankfurt.de/wissen' },

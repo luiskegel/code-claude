@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M04 } from '../quizzes/hard1';
 
 export const m04: Module = {
   id: 'm04',
@@ -377,20 +378,7 @@ export const m04: Module = {
       },
     },
   ],
-  quiz: [
-    { id: 'm04-q1', type: 'mc', lesson: 0, question: 'Was beschreibt ein Geschäftsmodell?', options: ['Den aktuellen Aktienkurs', 'Wie ein Unternehmen Wert schafft und Einnahmen erzielt', 'Die Anzahl der Mitarbeiter', 'Das Logo des Unternehmens'], answer: 1, explanation: 'Das Geschäftsmodell erklärt, womit und wie ein Unternehmen Geld verdient.' },
-    { id: 'm04-q2', type: 'case', lesson: 0, question: 'Ein Softwareanbieter erhöht die Preise um 8 % und verliert kaum Kunden, weil ein Wechsel teuer wäre. Welcher Wettbewerbsvorteil liegt vor?', options: ['Netzwerkeffekt', 'Hohe Wechselkosten', 'Kostenvorteil', 'Patentschutz'], answer: 1, explanation: 'Kunden bleiben, weil der Wechsel teuer und aufwendig wäre – das sind Wechselkosten.' },
-    { id: 'm04-q3', type: 'tf', lesson: 0, question: 'Ein gutes Produkt ist automatisch eine gute Investition.', answer: 1, explanation: 'Falsch. Auch die Bewertung (der Preis der Aktie), die Finanzen und die Konkurrenz müssen stimmen.' },
-    { id: 'm04-q4', type: 'calc', lesson: 1, question: 'Umsatz 500 Mio. €, Nettogewinn 40 Mio. €. Wie hoch ist die Nettomarge?', options: ['4 %', '8 %', '12,5 %', '40 %'], answer: 1, explanation: '40 / 500 = 0,08 = 8 %.' },
-    { id: 'm04-q5', type: 'mc', lesson: 1, question: 'Was ist der Free Cashflow?', options: ['Umsatz minus Steuern', 'Operativer Cashflow minus Investitionen', 'Gewinn plus Schulden', 'Dividende minus Zinsen'], answer: 1, explanation: 'Free Cashflow = operativer Cashflow − Investitionen (Capex).' },
-    { id: 'm04-q6', type: 'case', lesson: 1, question: 'Ein Unternehmen meldet seit Jahren steigende Gewinne, aber der operative Cashflow ist stets negativ. Wie bewertest du das?', options: ['Sehr positiv', 'Als Warnsignal, das genauer untersucht werden sollte', 'Irrelevant', 'Als Zeichen für hohe Dividenden'], answer: 1, explanation: 'Gewinne ohne Geldzufluss können auf aggressive Buchhaltung oder Zahlungsprobleme der Kunden hindeuten.' },
-    { id: 'm04-q7', type: 'calc', lesson: 2, question: 'Bilanzsumme 2.000 Mio. €, Eigenkapital 600 Mio. €. Wie hoch ist die Eigenkapitalquote?', options: ['20 %', '30 %', '33 %', '60 %'], answer: 1, explanation: '600 / 2.000 = 30 %.' },
-    { id: 'm04-q8', type: 'mc', lesson: 2, question: 'Was gilt immer für eine Bilanz?', options: ['Aktiva sind größer als Passiva', 'Aktiva = Eigenkapital + Fremdkapital', 'Eigenkapital = Umsatz', 'Schulden sind immer null'], answer: 1, explanation: 'Beide Seiten der Bilanz sind immer gleich groß.' },
-    { id: 'm04-q9', type: 'calc', lesson: 2, question: 'Finanzschulden 800 Mio. €, liquide Mittel 300 Mio. €. Wie hoch ist die Nettoverschuldung?', options: ['1.100 Mio. €', '500 Mio. €', '300 Mio. €', '800 Mio. €'], answer: 1, explanation: '800 − 300 = 500 Mio. €.' },
-    { id: 'm04-q10', type: 'mc', lesson: 3, question: 'Wo findest du die verlässlichsten Unternehmenszahlen?', options: ['In Kommentaren in sozialen Medien', 'Im Geschäftsbericht auf der Investor-Relations-Seite', 'In Werbeanzeigen', 'In Chatgruppen'], answer: 1, explanation: 'Geprüfte Geschäftsberichte sind die Primärquelle.' },
-    { id: 'm04-q11', type: 'mc', lesson: 3, question: 'Welcher Teil des Geschäftsberichts beschreibt die Gefahren für das Unternehmen?', options: ['Der Risikobericht im Lagebericht', 'Das Titelbild', 'Der Bestätigungsvermerk', 'Das Impressum'], answer: 0, explanation: 'Der Risikobericht (Teil des Lageberichts) beschreibt wesentliche Risiken.' },
-    { id: 'm04-q12', type: 'tf', lesson: 3, question: 'Für eine Analyse reicht es, die Zahlen eines einzigen Jahres zu betrachten.', answer: 1, explanation: 'Falsch. Erst die Entwicklung über mehrere Jahre zeigt Trends und Stabilität.' },
-  ],
+  quiz: QUIZ_M04,
   sources: [
     { label: 'Unternehmensregister – Pflichtveröffentlichungen', url: 'https://www.unternehmensregister.de' },
     { label: 'SEC EDGAR – Berichte US-Unternehmen', url: 'https://www.sec.gov/edgar/search/' },

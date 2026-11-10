@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M12 } from '../quizzes/hard2';
 
 export const m12: Module = {
   id: 'm12',
@@ -253,19 +254,7 @@ export const m12: Module = {
       },
     },
   ],
-  quiz: [
-    { id: 'm12-q1', type: 'calc', lesson: 0, question: 'Dein Depot bringt nominal 6 %, die Inflation beträgt 2 %. Wie hoch ist die Realrendite ungefähr?', options: ['8 %', '4 %', '3 %', '2 %'], answer: 1, explanation: 'Realrendite ≈ 6 % − 2 % = 4 %.' },
-    { id: 'm12-q2', type: 'mc', lesson: 0, question: 'Welches Inflationsziel verfolgt die EZB?', options: ['0 %', '2 % mittelfristig', '5 %', 'Kein Ziel'], answer: 1, explanation: 'Die EZB strebt eine Inflation von 2 % auf mittlere Sicht an.' },
-    { id: 'm12-q3', type: 'mc', lesson: 0, question: 'Welches zusätzliche Ziel hat die US-Notenbank Fed neben der Preisstabilität?', options: ['Hohe Aktienkurse', 'Maximale Beschäftigung', 'Einen schwachen Dollar', 'Niedrige Steuern'], answer: 1, explanation: 'Die Fed hat ein doppeltes Mandat: Preisstabilität und maximale Beschäftigung.' },
-    { id: 'm12-q4', type: 'case', lesson: 0, question: 'Die Zinsen steigen deutlich. Welche Aktien geraten typischerweise besonders unter Druck?', options: ['Wachstumsaktien mit Gewinnen weit in der Zukunft', 'Aktien von Unternehmen ohne Schulden mit sofortigen Gewinnen', 'Keine', 'Nur Penny Stocks'], answer: 0, explanation: 'Steigende Zinsen senken den heutigen Wert ferner Gewinne – Wachstumsaktien leiden besonders.' },
-    { id: 'm12-q5', type: 'mc', lesson: 1, question: 'Was ist eine „technische Rezession“ nach gängiger Faustregel?', options: ['Ein Börsenrückgang um 10 %', 'Zwei Quartale in Folge mit schrumpfendem BIP', 'Ein Computerausfall an der Börse', 'Eine steigende Inflation'], answer: 1, explanation: 'Zwei aufeinanderfolgende Quartale mit negativem Wachstum gelten als technische Rezession.' },
-    { id: 'm12-q6', type: 'mc', lesson: 1, question: 'Welche Branche gilt als eher defensiv?', options: ['Automobilbau', 'Lebensmittel und Haushaltswaren', 'Stahl', 'Luxusgüter'], answer: 1, explanation: 'Lebensmittel und Haushaltswaren werden auch in Krisen gekauft.' },
-    { id: 'm12-q7', type: 'tf', lesson: 1, question: 'Die Börse reagiert oft schon, bevor eine Rezession offiziell festgestellt wird.', answer: 0, explanation: 'Richtig. Die Börse nimmt Entwicklungen vorweg und läuft der Wirtschaft häufig voraus.' },
-    { id: 'm12-q8', type: 'mc', lesson: 1, question: 'Was misst das Bruttoinlandsprodukt?', options: ['Die Börsenkapitalisierung eines Landes', 'Den Wert aller in einem Land produzierten Waren und Dienstleistungen', 'Die Staatsschulden', 'Die Inflation'], answer: 1, explanation: 'Das BIP ist der Gesamtwert der Wirtschaftsleistung in einem Zeitraum.' },
-    { id: 'm12-q9', type: 'mc', lesson: 2, question: 'Was ist Quantitative Easing (QE)?', options: ['Ein Steuersystem', 'Anleihekäufe der Zentralbank zur Lockerung der Geldpolitik', 'Eine Börsenregel', 'Ein Ordertyp'], answer: 1, explanation: 'Bei QE kauft die Zentralbank Anleihen, um Zinsen zu drücken und die Wirtschaft zu stützen.' },
-    { id: 'm12-q10', type: 'case', lesson: 2, question: 'Die Arbeitslosenzahlen sind schlecht, aber genau so schlecht wie erwartet. Wie reagiert der Markt typischerweise?', options: ['Starker Crash', 'Kaum Reaktion, da die Information eingepreist war', 'Starker Anstieg um 20 %', 'Handelsstopp'], answer: 1, explanation: 'Märkte reagieren vor allem auf Überraschungen gegenüber den Erwartungen.' },
-    { id: 'm12-q11', type: 'tf', lesson: 2, question: 'Langfristige Anleger sollten auf jede wichtige Schlagzeile mit einem Trade reagieren.', answer: 1, explanation: 'Falsch. Die meisten Nachrichten ändern die langfristige Ertragskraft nicht.' },
-  ],
+  quiz: QUIZ_M12,
   sources: [
     { label: 'Europäische Zentralbank – Geldpolitik', url: 'https://www.ecb.europa.eu/mopo/html/index.de.html' },
     { label: 'Deutsche Bundesbank – Geldpolitik erklärt', url: 'https://www.bundesbank.de/de/aufgaben/geldpolitik' },

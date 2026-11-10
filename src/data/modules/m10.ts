@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M10 } from '../quizzes/hard2';
 
 export const m10: Module = {
   id: 'm10',
@@ -337,20 +338,7 @@ export const m10: Module = {
       widget: 'leverage',
     },
   ],
-  quiz: [
-    { id: 'm10-q1', type: 'mc', lesson: 0, question: 'Was misst die Volatilität?', options: ['Die Höhe der Dividende', 'Die Schwankungsbreite einer Anlage', 'Die Anzahl der Aktionäre', 'Den Gewinn eines Unternehmens'], answer: 1, explanation: 'Volatilität misst, wie stark die Renditen schwanken – meist als Standardabweichung.' },
-    { id: 'm10-q2', type: 'calc', lesson: 0, question: 'Ein Depot fällt von 50.000 € auf 35.000 €. Wie hoch ist der Drawdown?', options: ['−15 %', '−30 %', '−35 %', '−43 %'], answer: 1, explanation: '(35.000 − 50.000) / 50.000 = −30 %.' },
-    { id: 'm10-q3', type: 'calc', lesson: 0, question: 'Nach einem Verlust von 60 %: Wie viel Prozent Gewinn sind nötig, um den Ausgangswert zu erreichen?', options: ['60 %', '100 %', '150 %', '240 %'], answer: 2, explanation: '0,6 / 0,4 = 1,5 → +150 %.' },
-    { id: 'm10-q4', type: 'tf', lesson: 0, question: 'Bei einer Insolvenz werden Aktionäre vor den Gläubigern bedient.', answer: 1, explanation: 'Falsch. Aktionäre stehen ganz hinten und gehen meist leer aus.' },
-    { id: 'm10-q5', type: 'mc', lesson: 1, question: 'Was ist ein Klumpenrisiko?', options: ['Ein Risiko durch zu viele kleine Positionen', 'Eine hohe Abhängigkeit des Vermögens von einem einzelnen Faktor', 'Das Risiko schlechten Wetters', 'Ein Risiko, das nur Banken betrifft'], answer: 1, explanation: 'Klumpenrisiko entsteht durch Konzentration auf eine Aktie, Branche, ein Land oder einen anderen einzelnen Faktor.' },
-    { id: 'm10-q6', type: 'case', lesson: 1, question: 'Jana hält 60 % ihres Vermögens in Aktien ihres Arbeitgebers. Warum ist das besonders riskant?', options: ['Weil Arbeitgeberaktien steuerlich verboten sind', 'Weil Einkommen und Vermögen im Krisenfall gleichzeitig betroffen sind', 'Weil Arbeitgeberaktien keine Dividende zahlen', 'Es ist nicht riskant'], answer: 1, explanation: 'Gerät der Arbeitgeber in eine Krise, drohen Jobverlust und Vermögensverlust gleichzeitig.' },
-    { id: 'm10-q7', type: 'mc', lesson: 1, question: 'Eine Korrelation von +1 zwischen zwei Aktien bedeutet …', options: ['Sie bewegen sich immer gegenläufig', 'Sie bewegen sich immer im Gleichlauf – Streuung bringt kaum Nutzen', 'Sie haben keinen Zusammenhang', 'Sie zahlen dieselbe Dividende'], answer: 1, explanation: 'Bei +1 laufen die Werte perfekt gleich; Diversifikation zwischen ihnen wirkt dann nicht.' },
-    { id: 'm10-q8', type: 'calc', lesson: 2, question: 'Kapital 20.000 €, Risiko pro Position 1 %, Einstieg 40 €, Stop 36 €. Wie viele Aktien darfst du kaufen?', options: ['20', '50', '100', '500'], answer: 1, explanation: 'Risikobudget 200 €, Risiko je Aktie 4 € → 200 / 4 = 50 Aktien.' },
-    { id: 'm10-q9', type: 'mc', lesson: 2, question: 'Was beschreibt die Risikotragfähigkeit?', options: ['Wie gut man sich mit Risiken fühlt', 'Wie viel Verlust man finanziell verkraften kann', 'Wie viele Aktien man besitzt', 'Die Volatilität des DAX'], answer: 1, explanation: 'Die Risikotragfähigkeit ist die objektive, finanzielle Seite des Risikoprofils.' },
-    { id: 'm10-q10', type: 'case', lesson: 3, question: 'Ein Bekannter rät dir, einen Kredit aufzunehmen, um „günstig“ Aktien zu kaufen. Was ist das Hauptproblem?', options: ['Es gibt keins', 'Kursverluste führen zu Schulden, die du unabhängig von der Entwicklung zurückzahlen musst', 'Kredite sind immer zinsfrei', 'Banken verbieten Aktienkäufe'], answer: 1, explanation: 'Mit Kredit verwandelt sich ein Kursverlust in eine Schuld plus Zinsen.' },
-    { id: 'm10-q11', type: 'calc', lesson: 3, question: 'Ein Basiswert fällt um 10 % und steigt dann um 11,1 %. Was passiert mit einem täglich gehebelten Produkt (Hebel 5)?', options: ['Es steht wieder bei 100 %', 'Es liegt deutlich im Minus (ca. −22 %)', 'Es liegt 50 % im Plus', 'Es ist unverändert'], answer: 1, explanation: '100 × 0,5 × 1,556 ≈ 77,8 → ca. −22 % trotz unverändertem Basiswert (Volatilitätsverlust).' },
-    { id: 'm10-q12', type: 'tf', lesson: 3, question: 'Ein Knock-out-Zertifikat kann innerhalb eines Tages (nahezu) wertlos werden.', answer: 0, explanation: 'Richtig. Wird die Knock-out-Schwelle berührt, verfällt das Produkt sofort.' },
-  ],
+  quiz: QUIZ_M10,
   sources: [
     { label: 'BaFin – Verbraucherwarnungen und Risiken von Finanzprodukten', url: 'https://www.bafin.de/DE/Verbraucher/verbraucher_node.html' },
     { label: 'ESMA – Maßnahmen zu CFDs', url: 'https://www.esma.europa.eu' },

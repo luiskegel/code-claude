@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M09 } from '../quizzes/hard2';
 
 export const m09: Module = {
   id: 'm09',
@@ -243,19 +244,7 @@ export const m09: Module = {
       widget: 'etf-comparison',
     },
   ],
-  quiz: [
-    { id: 'm09-q1', type: 'mc', lesson: 0, question: 'Was ist das Ziel eines passiven Index-ETFs?', options: ['Den Markt deutlich zu schlagen', 'Einen Index möglichst genau nachzubilden', 'Nur in Anleihen zu investieren', 'Einen festen Zins zu zahlen'], answer: 1, explanation: 'Ein passiver ETF bildet einen Index nach, statt ihn schlagen zu wollen.' },
-    { id: 'm09-q2', type: 'tf', lesson: 0, question: 'ETFs sind Sondervermögen und bleiben bei einer Pleite der Fondsgesellschaft erhalten.', answer: 0, explanation: 'Richtig. Das schützt allerdings nicht vor Kursverlusten des Index.' },
-    { id: 'm09-q3', type: 'mc', lesson: 0, question: 'Was bedeutet synthetische Replikation?', options: ['Der ETF kauft alle Aktien des Index', 'Der ETF bildet den Index über einen Tauschvertrag (Swap) nach', 'Der ETF ist eine Fälschung', 'Der ETF investiert in Kunststoff'], answer: 1, explanation: 'Synthetische ETFs tauschen die Rendite eines Wertpapierkorbs über einen Swap gegen die Indexrendite.' },
-    { id: 'm09-q4', type: 'mc', lesson: 1, question: 'Welche Länder fehlen im MSCI World?', options: ['Die USA', 'Deutschland', 'Schwellenländer wie China und Indien', 'Japan'], answer: 2, explanation: 'Der MSCI World umfasst nur Industrieländer. Schwellenländer sind im MSCI Emerging Markets enthalten.' },
-    { id: 'm09-q5', type: 'mc', lesson: 1, question: 'Welcher Index enthält Industrie- und Schwellenländer?', options: ['S&P 500', 'DAX', 'FTSE All-World', 'Nasdaq-100'], answer: 2, explanation: 'Der FTSE All-World (wie auch der MSCI ACWI) enthält beide Ländergruppen.' },
-    { id: 'm09-q6', type: 'calc', lesson: 1, question: 'Du hältst 6.000 € in einem ETF mit 70 % USA-Anteil und 4.000 € in einem Europa-ETF (0 % USA). Wie hoch ist dein USA-Anteil?', options: ['30 %', '42 %', '60 %', '70 %'], answer: 1, explanation: '6.000 × 0,7 = 4.200 € von 10.000 € = 42 %.' },
-    { id: 'm09-q7', type: 'mc', lesson: 2, question: 'Was passiert bei einem thesaurierenden ETF mit den Dividenden?', options: ['Sie werden ausgezahlt', 'Sie werden automatisch reinvestiert', 'Sie verfallen', 'Sie gehen an die Fondsgesellschaft'], answer: 1, explanation: 'Thesaurierende ETFs reinvestieren Erträge automatisch.' },
-    { id: 'm09-q8', type: 'calc', lesson: 2, question: 'Du hast 15.000 € in einem ETF mit 0,2 % TER. Wie hoch sind die laufenden Kosten pro Jahr ungefähr?', options: ['3 €', '30 €', '300 €', '0,2 €'], answer: 1, explanation: '15.000 € × 0,002 = 30 €.' },
-    { id: 'm09-q9', type: 'mc', lesson: 2, question: 'Welche Kennzahl zeigt die tatsächliche Renditeabweichung eines ETFs vom Index?', options: ['TER', 'Tracking Difference', 'KGV', 'Dividendenrendite'], answer: 1, explanation: 'Die Tracking Difference misst die tatsächliche Abweichung und enthält alle Effekte.' },
-    { id: 'm09-q10', type: 'tf', lesson: 2, question: 'Ein ETF auf einen breiten Weltindex kann nicht an Wert verlieren.', answer: 1, explanation: 'Falsch. Bei Markteinbrüchen fallen auch breite ETFs deutlich.' },
-    { id: 'm09-q11', type: 'case', lesson: 2, question: 'Ein Themen-ETF auf eine einzelne Technologie ist in einem Jahr um 80 % gestiegen. Was ist zu bedenken?', options: ['Er ist risikolos', 'Er ist oft wenig gestreut, teurer und kann stark schwanken', 'Er garantiert weitere 80 %', 'Er ersetzt einen Welt-ETF vollständig'], answer: 1, explanation: 'Themen-ETFs sind Nischeninvestments mit Konzentrations- und Bewertungsrisiko.' },
-  ],
+  quiz: QUIZ_M09,
   sources: [
     { label: 'BaFin – Investmentfonds und ETFs', url: 'https://www.bafin.de/DE/Verbraucher/GeldanlageWertpapiere/geldanlagewertpapiere_node.html' },
     { label: 'MSCI – Index-Factsheets', url: 'https://www.msci.com/indexes' },

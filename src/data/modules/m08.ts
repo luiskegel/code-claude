@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M08 } from '../quizzes/hard1';
 
 export const m08: Module = {
   id: 'm08',
@@ -258,19 +259,7 @@ export const m08: Module = {
       widget: 'savings-plan',
     },
   ],
-  quiz: [
-    { id: 'm08-q1', type: 'mc', lesson: 0, question: 'Was ist der Kern der Buy-and-Hold-Strategie?', options: ['Täglich kaufen und verkaufen', 'Langfristig halten statt Market Timing', 'Nur Penny Stocks kaufen', 'Immer bei Höchstkursen verkaufen'], answer: 1, explanation: 'Buy and Hold setzt auf langfristiges Halten und verzichtet auf den Versuch, den Markt zu timen.' },
-    { id: 'm08-q2', type: 'mc', lesson: 0, question: 'Welches Risiko lässt sich durch Diversifikation reduzieren?', options: ['Das Einzelrisiko eines Unternehmens', 'Jedes Risiko vollständig', 'Nur das Inflationsrisiko', 'Gar keines'], answer: 0, explanation: 'Diversifikation reduziert das unsystematische (Einzel-)Risiko. Das Marktrisiko bleibt.' },
-    { id: 'm08-q3', type: 'case', lesson: 0, question: 'Ein Anleger besitzt 8 Aktien – alle aus der Halbleiterbranche. Wie ist sein Depot diversifiziert?', options: ['Sehr gut, 8 Aktien reichen', 'Schlecht, es besteht ein Branchen-Klumpenrisiko', 'Perfekt, Technologie ist sicher', 'Diversifikation ist unwichtig'], answer: 1, explanation: 'Alle Positionen hängen an derselben Branche. Ein Branchenabschwung träfe das ganze Depot.' },
-    { id: 'm08-q4', type: 'tf', lesson: 0, question: 'Historische Renditen langfristiger Aktienanlagen sind eine Garantie für die Zukunft.', answer: 1, explanation: 'Falsch. Vergangene Entwicklungen sind keine Garantie – es gab auch lange Phasen mit Verlusten.' },
-    { id: 'm08-q5', type: 'mc', lesson: 1, question: 'Was ist die Sicherheitsmarge im Value Investing?', options: ['Ein Stop-Loss', 'Der Abstand zwischen innerem Wert und Kaufpreis', 'Die Dividendenrendite', 'Die Ordergebühr'], answer: 1, explanation: 'Die Sicherheitsmarge ist der Puffer zwischen geschätztem Wert und Kaufpreis.' },
-    { id: 'm08-q6', type: 'mc', lesson: 1, question: 'Was ist ein typisches Risiko von Growth-Aktien?', options: ['Zu niedrige Bewertung', 'Hohe Bewertung, die bei Enttäuschungen stark fällt', 'Garantierte Dividenden', 'Fehlende Schwankungen'], answer: 1, explanation: 'Hohe Erwartungen sind im Kurs eingepreist; Enttäuschungen führen oft zu starken Rückgängen.' },
-    { id: 'm08-q7', type: 'mc', lesson: 1, question: 'Was kauft ein Momentum-Investor?', options: ['Die Aktien mit dem niedrigsten KGV', 'Aktien mit starker jüngster Kursentwicklung', 'Nur Anleihen', 'Aktien mit der höchsten Dividende'], answer: 1, explanation: 'Momentum setzt auf die Fortsetzung starker Kurstrends.' },
-    { id: 'm08-q8', type: 'calc', lesson: 2, question: 'Sparplan 100 € pro Monat. Kurse: 20 €, 10 €, 20 €. Wie hoch ist der Durchschnittspreis?', options: ['16,67 €', '15,00 €', '13,33 €', '20,00 €'], answer: 1, explanation: 'Anteile: 5 + 10 + 5 = 20 für 300 € → 15 € Durchschnittspreis.' },
-    { id: 'm08-q9', type: 'tf', lesson: 2, question: 'Der Cost-Average-Effekt garantiert eine höhere Rendite als eine Einmalanlage.', answer: 1, explanation: 'Falsch. In langfristig steigenden Märkten ist eine Einmalanlage statistisch oft etwas besser. Der Effekt glättet vor allem das Timing-Risiko.' },
-    { id: 'm08-q10', type: 'mc', lesson: 2, question: 'Was beschreibt die Core-Satellite-Strategie?', options: ['Nur Satellitenunternehmen kaufen', 'Breiter Kern (z. B. Welt-ETF) plus kleinere Beimischungen', 'Täglicher Handel', 'Nur Anleihen'], answer: 1, explanation: 'Ein breiter, günstiger Kern wird mit kleineren, gezielten Positionen ergänzt.' },
-    { id: 'm08-q11', type: 'case', lesson: 2, question: 'Der Markt fällt um 25 %. Was ist für einen langfristigen Sparplan-Anleger nach der Lehre dieses Moduls meist sinnvoll?', options: ['Sparplan sofort stoppen und alles verkaufen', 'Sparplan wie geplant fortsetzen, sofern sich die persönliche Situation nicht geändert hat', 'Einen Kredit aufnehmen und alles investieren', 'Auf Penny Stocks umsteigen'], answer: 1, explanation: 'Gerade in fallenden Märkten kauft der Sparplan günstig. Wichtig: Das gilt nur, wenn das Geld langfristig nicht benötigt wird.' },
-  ],
+  quiz: QUIZ_M08,
   sources: [
     { label: 'BaFin – Geldanlage: Fonds und Sparpläne', url: 'https://www.bafin.de/DE/Verbraucher/GeldanlageWertpapiere/geldanlagewertpapiere_node.html' },
     { label: 'Verbraucherzentrale – ETF-Sparplan', url: 'https://www.verbraucherzentrale.de/wissen/geld-versicherungen/sparen-und-anlegen' },

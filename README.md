@@ -16,7 +16,7 @@ Eine interaktive Lernplattform, mit der du das Investieren an der Börse von nul
 | **Lektionen** | Erklärung, Beispiele, interaktives Element, praktische Anwendung, Fachbegriffe, Anfängerfehler, Zusammenfassung, Übung mit Lösung, Kurztest, Quellen |
 | **Virtuelles Depot** | Paper Trading mit 10.000 €: Kauf/Verkauf, Durchschnittskaufpreis, G/V, Bargeld, Portfolioverlauf, Transaktionen, simulierte Dividenden, Zeitsteuerung |
 | **Aktien-Lexikon** | 184 Begriffe mit Kurz- und Langerklärung, Beispiel, Kategorie, Suche und Filter |
-| **Wissenstests** | 169 Fragen (11–12 je Modul): Multiple Choice, Richtig/Falsch, Rechenaufgaben, Praxisfälle, sofortige Erklärung, Wiederholung falscher Antworten |
+| **Wissenstests** | 167 anspruchsvolle Fragen (11–12 je Modul, Antworten bei jedem Durchgang neu gemischt): Multiple Choice, Richtig/Falsch, Rechenaufgaben, Praxisfälle, sofortige Erklärung, Wiederholung falscher Antworten |
 | **Mein Lernfortschritt** | Lektionen, Testergebnisse, Punkte, Lernzeit, Stärken, Schwächen, Wiederholungsbedarf |
 | **Aktien-Rechner** | Rendite, Zinseszins, Dividende, Sparplan, KGV, Gewinn je Aktie, Ø-Kaufpreis, Verlust, Break-even, Diversifikation – jeweils mit Diagramm, Erklärung, Beispielwerten, Zurücksetzen |
 | **Watchlist & Recherche** | Unternehmen beobachten, Notizen, Investmentthese, Datum der letzten Analyse, gekennzeichnete Datenqualität |

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { optionsOf, shuffleQuiz, type ShuffledQuestion } from '@/lib/quiz';
 import { CheckCircle2, RotateCcw, XCircle, Trophy, ArrowRight } from 'lucide-react';
 import type { QuizQuestion } from '@/types';
 import { Badge, cx, ProgressBar } from '@/components/ui/ui';
@@ -11,7 +12,6 @@ const TYPE_LABEL: Record<QuizQuestion['type'], string> = {
   case: 'Praxisfall',
 };
 
-export const optionsOf = (q: QuizQuestion) => (q.type === 'tf' ? ['Richtig', 'Falsch'] : q.options ?? []);
 
 export interface QuizResultData {
   correct: number;
@@ -34,14 +34,16 @@ export function QuizRunner({
   title?: string;
   showPassInfo?: boolean;
 }) {
-  const [set, setSet] = useState<QuizQuestion[]>(questions);
+  // Fragen und Antwortmöglichkeiten werden bei jedem Durchgang neu gemischt
+  const [set, setSet] = useState<ShuffledQuestion[]>(() => shuffleQuiz(questions));
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [done, setDone] = useState(false);
   const [isRetry, setIsRetry] = useState(false);
 
-  const q = set[index];
+  const item = set[index];
+  const q = item?.question;
   const correctCount = useMemo(() => Object.values(answers).filter(Boolean).length, [answers]);
 
   if (!q && !done) return null;
@@ -49,7 +51,7 @@ export function QuizRunner({
   const choose = (i: number) => {
     if (selected !== null) return;
     setSelected(i);
-    setAnswers((a) => ({ ...a, [q.id]: i === q.answer }));
+    setAnswers((a) => ({ ...a, [q.id]: i === item.answer }));
   };
 
   const next = () => {
@@ -58,14 +60,14 @@ export function QuizRunner({
       setSelected(null);
     } else {
       setDone(true);
-      const wrongIds = set.filter((x) => !answers[x.id]).map((x) => x.id);
+      const wrongIds = set.filter((x) => !answers[x.question.id]).map((x) => x.question.id);
       if (!isRetry) onFinish?.({ correct: set.length - wrongIds.length, total: set.length, wrongIds });
     }
   };
 
   const restart = (onlyWrong: boolean) => {
-    const wrong = set.filter((x) => !answers[x.id]);
-    setSet(onlyWrong ? wrong : questions);
+    const wrong = set.filter((x) => !answers[x.question.id]).map((x) => x.question);
+    setSet(shuffleQuiz(onlyWrong ? wrong : questions));
     setIsRetry(onlyWrong);
     setIndex(0);
     setSelected(null);
@@ -77,7 +79,7 @@ export function QuizRunner({
     const total = set.length;
     const share = total ? correctCount / total : 0;
     const passed = share >= PASS_THRESHOLD;
-    const wrong = set.filter((x) => !answers[x.id]);
+    const wrong = set.filter((x) => !answers[x.question.id]).map((x) => x.question);
     return (
       <div className="space-y-5" aria-live="polite">
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.06] bg-ink-950/40 p-6 text-center">
@@ -121,7 +123,7 @@ export function QuizRunner({
     );
   }
 
-  const opts = optionsOf(q);
+  const opts = item.options;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -138,8 +140,8 @@ export function QuizRunner({
       <div className="grid gap-2" role="radiogroup" aria-label="Antwortmöglichkeiten">
         {opts.map((o, i) => {
           const isSel = selected === i;
-          const isRight = selected !== null && i === q.answer;
-          const isWrong = isSel && i !== q.answer;
+          const isRight = selected !== null && i === item.answer;
+          const isWrong = isSel && i !== item.answer;
           return (
             <button
               key={i}
@@ -164,10 +166,10 @@ export function QuizRunner({
       </div>
       {selected !== null && (
         <div
-          className={cx('rounded-xl border p-4 text-sm', selected === q.answer ? 'border-accent/30 bg-accent/[0.06]' : 'border-loss/30 bg-loss/[0.06]')}
+          className={cx('rounded-xl border p-4 text-sm', selected === item.answer ? 'border-accent/30 bg-accent/[0.06]' : 'border-loss/30 bg-loss/[0.06]')}
           aria-live="polite"
         >
-          <p className="mb-1 font-semibold text-white">{selected === q.answer ? 'Richtig!' : 'Leider falsch.'}</p>
+          <p className="mb-1 font-semibold text-white">{selected === item.answer ? 'Richtig!' : 'Leider falsch.'}</p>
           <p className="text-slate-300">{q.explanation}</p>
         </div>
       )}

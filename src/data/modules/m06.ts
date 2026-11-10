@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M06 } from '../quizzes/hard1';
 
 export const m06: Module = {
   id: 'm06',
@@ -247,19 +248,7 @@ export const m06: Module = {
       widget: 'indicators',
     },
   ],
-  quiz: [
-    { id: 'm06-q1', type: 'mc', lesson: 0, question: 'Welche vier Werte zeigt eine Kerze im Candlestick-Chart?', options: ['Kurs, Volumen, KGV, Dividende', 'Eröffnung, Hoch, Tief, Schluss', 'Kauf, Verkauf, Spread, Gebühr', 'Umsatz, Gewinn, Schulden, Cashflow'], answer: 1, explanation: 'Eine Kerze zeigt Open, High, Low und Close eines Zeitraums.' },
-    { id: 'm06-q2', type: 'mc', lesson: 0, question: 'Was zeigt ein langer unterer Docht?', options: ['Der Kurs ist den ganzen Tag gestiegen', 'Der Kurs fiel stark, wurde aber wieder hochgekauft', 'Es gab keinen Handel', 'Die Dividende wurde gezahlt'], answer: 1, explanation: 'Der untere Docht reicht bis zum Tagestief. Ein langer unterer Docht bedeutet, dass Käufer tiefe Kurse genutzt haben.' },
-    { id: 'm06-q3', type: 'tf', lesson: 0, question: 'Für langfristige Charts ist eine logarithmische Skala meist aussagekräftiger als eine lineare.', answer: 0, explanation: 'Richtig. Auf der Log-Skala sind gleiche prozentuale Veränderungen gleich groß.' },
-    { id: 'm06-q4', type: 'mc', lesson: 1, question: 'Woran erkennst du einen Aufwärtstrend?', options: ['Tiefere Hochs und tiefere Tiefs', 'Höhere Hochs und höhere Tiefs', 'Gleichbleibendes Volumen', 'Eine hohe Dividende'], answer: 1, explanation: 'Ein Aufwärtstrend besteht aus einer Folge höherer Hochs und höherer Tiefs.' },
-    { id: 'm06-q5', type: 'mc', lesson: 1, question: 'Was ist eine Unterstützung?', options: ['Ein Kursbereich, an dem der Kurs mehrfach nach unten gestoppt hat', 'Eine staatliche Hilfe für Unternehmen', 'Der höchste Kurs des Jahres', 'Eine Dividendenzahlung'], answer: 0, explanation: 'An einer Unterstützung traten in der Vergangenheit genügend Käufer auf.' },
-    { id: 'm06-q6', type: 'case', lesson: 1, question: 'Eine Aktie überwindet mit hohem Volumen einen alten Widerstand bei 100 €. Was erwarten Techniker häufig?', options: ['Dass 100 € künftig als Unterstützung wirken kann', 'Dass die Aktie sofort auf null fällt', 'Dass das Unternehmen insolvent ist', 'Nichts – Widerstände spielen keine Rolle'], answer: 0, explanation: 'Überwundene Widerstände werden oft zu Unterstützungen. Garantiert ist das aber nicht.' },
-    { id: 'm06-q7', type: 'tf', lesson: 1, question: 'Die technische Analyse kann zukünftige Kurse zuverlässig vorhersagen.', answer: 1, explanation: 'Falsch. Sie liefert bestenfalls Wahrscheinlichkeiten und ist wissenschaftlich umstritten.' },
-    { id: 'm06-q8', type: 'calc', lesson: 2, question: 'Schlusskurse: 10, 12, 14 €. Wie lautet der 3-Tage-Durchschnitt?', options: ['11 €', '12 €', '13 €', '36 €'], answer: 1, explanation: '(10 + 12 + 14) / 3 = 12 €.' },
-    { id: 'm06-q9', type: 'mc', lesson: 2, question: 'In welchem Bereich bewegt sich der RSI?', options: ['−100 bis +100', '0 bis 100', '0 bis 1.000', 'Unbegrenzt'], answer: 1, explanation: 'Der RSI liegt immer zwischen 0 und 100.' },
-    { id: 'm06-q10', type: 'case', lesson: 2, question: 'Der RSI einer Aktie steht bei 82. Was folgt daraus?', options: ['Die Aktie muss fallen', 'Die Aktie ist kurzfristig stark gestiegen (überkauft) – das ist aber kein sicheres Verkaufssignal', 'Das Unternehmen ist überschuldet', 'Die Aktie ist fundamental günstig'], answer: 1, explanation: 'Überkauft beschreibt nur einen schnellen Anstieg. In starken Trends kann der RSI lange hoch bleiben.' },
-    { id: 'm06-q11', type: 'mc', lesson: 2, question: 'Warum ist hohes Volumen bei einem Ausbruch wichtig?', options: ['Es senkt die Gebühren', 'Es zeigt, dass viele Marktteilnehmer die Bewegung tragen', 'Es erhöht die Dividende', 'Es ist unwichtig'], answer: 1, explanation: 'Hohes Volumen bestätigt, dass eine Kursbewegung breite Unterstützung hat.' },
-  ],
+  quiz: QUIZ_M06,
   sources: [
     { label: 'Börse Frankfurt – Wissen: Charttechnik', url: 'https://www.boerse-frankfurt.de/wissen' },
     { label: 'BaFin – Warnung vor Trading-Versprechen', url: 'https://www.bafin.de/DE/Verbraucher/verbraucher_node.html' },

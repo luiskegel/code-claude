@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M07 } from '../quizzes/hard1';
 
 export const m07: Module = {
   id: 'm07',
@@ -251,19 +252,7 @@ export const m07: Module = {
       widget: 'compound-interest',
     },
   ],
-  quiz: [
-    { id: 'm07-q1', type: 'mc', lesson: 0, question: 'Wer beschließt in Deutschland die Höhe der Dividende?', options: ['Die BaFin', 'Die Hauptversammlung', 'Die Deutsche Börse', 'Der Broker'], answer: 1, explanation: 'Die Hauptversammlung beschließt auf Vorschlag von Vorstand und Aufsichtsrat.' },
-    { id: 'm07-q2', type: 'calc', lesson: 0, question: 'Kurs 80 €, Dividende 2,40 €. Wie hoch ist die Dividendenrendite?', options: ['2,4 %', '3 %', '4 %', '33 %'], answer: 1, explanation: '2,40 / 80 = 0,03 = 3 %.' },
-    { id: 'm07-q3', type: 'case', lesson: 0, question: 'Du kaufst eine Aktie am Ex-Tag. Erhältst du die gerade beschlossene Dividende?', options: ['Ja', 'Nein', 'Nur die Hälfte', 'Nur, wenn du sie ein Jahr hältst'], answer: 1, explanation: 'Ab dem Ex-Tag wird die Aktie ohne Dividendenanspruch gehandelt.' },
-    { id: 'm07-q4', type: 'tf', lesson: 0, question: 'Am Ex-Tag sinkt der Kurs rechnerisch um die Höhe der Dividende.', answer: 0, explanation: 'Richtig. Das ist der Dividendenabschlag.' },
-    { id: 'm07-q5', type: 'mc', lesson: 1, question: 'Was ist ein Dividendenaristokrat?', options: ['Ein Unternehmen mit der höchsten Dividende', 'Ein Unternehmen, das seine Dividende seit sehr vielen Jahren jährlich erhöht', 'Ein Adeliger, der Aktien besitzt', 'Ein ETF ohne Ausschüttung'], answer: 1, explanation: 'Im S&P 500 Dividend Aristocrats sind es mindestens 25 Jahre in Folge mit Dividendenerhöhungen.' },
-    { id: 'm07-q6', type: 'calc', lesson: 1, question: 'Gewinn je Aktie 4 €, Dividende 3 €. Wie hoch ist die Ausschüttungsquote?', options: ['33 %', '75 %', '133 %', '12 %'], answer: 1, explanation: '3 / 4 = 75 %.' },
-    { id: 'm07-q7', type: 'case', lesson: 1, question: 'Eine Aktie bietet 14 % Dividendenrendite, die Ausschüttungsquote liegt bei 160 %. Was ist am wahrscheinlichsten?', options: ['Eine Dividendenerhöhung', 'Eine Dividendenkürzung', 'Ein garantiertes Einkommen', 'Nichts davon'], answer: 1, explanation: 'Das Unternehmen zahlt deutlich mehr aus, als es verdient – das ist auf Dauer nicht tragfähig.' },
-    { id: 'm07-q8', type: 'tf', lesson: 1, question: 'Eine hohe Dividendenrendite bedeutet automatisch eine hohe Gesamtrendite.', answer: 1, explanation: 'Falsch. Fällt gleichzeitig der Kurs, kann die Gesamtrendite niedrig oder negativ sein.' },
-    { id: 'm07-q9', type: 'calc', lesson: 2, question: 'Nach der 72er-Regel: In wie vielen Jahren verdoppelt sich Geld bei 8 % Rendite pro Jahr?', options: ['6 Jahre', '9 Jahre', '12 Jahre', '18 Jahre'], answer: 1, explanation: '72 / 8 = 9 Jahre.' },
-    { id: 'm07-q10', type: 'calc', lesson: 2, question: '1.000 € werden 2 Jahre zu 10 % angelegt, Erträge reinvestiert. Wie hoch ist der Endwert?', options: ['1.200 €', '1.210 €', '1.100 €', '1.020 €'], answer: 1, explanation: '1.000 × 1,1 × 1,1 = 1.210 €. Die zusätzlichen 10 € sind der Zinseszins.' },
-    { id: 'm07-q11', type: 'mc', lesson: 2, question: 'Welcher Faktor hat beim Zinseszinseffekt den größten Einfluss?', options: ['Die Farbe des Depots', 'Die Anlagedauer', 'Die Anzahl der Broker', 'Der Wochentag des Kaufs'], answer: 1, explanation: 'Die Zeit ist der stärkste Hebel, weil das Wachstum exponentiell ist.' },
-  ],
+  quiz: QUIZ_M07,
   sources: [
     { label: 'Deutsches Aktieninstitut – Dividendenstudie', url: 'https://www.dai.de' },
     { label: 'S&P Dow Jones Indices – S&P 500 Dividend Aristocrats', url: 'https://www.spglobal.com/spdji/en/indices/dividends-factors/sp-500-dividend-aristocrats/' },

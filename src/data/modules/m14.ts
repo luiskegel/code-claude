@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M14 } from '../quizzes/hard2';
 
 export const m14: Module = {
   id: 'm14',
@@ -241,19 +242,7 @@ export const m14: Module = {
       widget: 'drawdown',
     },
   ],
-  quiz: [
-    { id: 'm14-q1', type: 'calc', lesson: 0, question: 'Ein Unternehmen hat 200 Mio. Aktien und 1 Mrd. € Gewinn. Nach einem Rückkauf sind es 180 Mio. Aktien. Wie hoch ist der neue EPS bei gleichem Gewinn?', options: ['5,00 €', '5,56 €', '4,50 €', '6,00 €'], answer: 1, explanation: '1.000 / 180 ≈ 5,56 € (vorher 5,00 €).' },
-    { id: 'm14-q2', type: 'tf', lesson: 0, question: 'Insiderhandel ist in der EU erlaubt, solange man den Gewinn versteuert.', answer: 1, explanation: 'Falsch. Insiderhandel ist nach der Marktmissbrauchsverordnung verboten und strafbar.' },
-    { id: 'm14-q3', type: 'mc', lesson: 0, question: 'Was sind Directors’ Dealings?', options: ['Geheime Absprachen zwischen Vorständen', 'Meldepflichtige Aktiengeschäfte von Führungskräften in eigenen Aktien', 'Dividendenzahlungen an Vorstände', 'Ein Ordertyp'], answer: 1, explanation: 'Führungskräfte müssen eigene Geschäfte oberhalb einer Schwelle öffentlich melden.' },
-    { id: 'm14-q4', type: 'mc', lesson: 1, question: 'Warum ist das Verlustrisiko beim Leerverkauf theoretisch unbegrenzt?', options: ['Weil eine Aktie unbegrenzt steigen kann', 'Weil Aktien nicht unter null fallen können', 'Weil der Staat Verluste übernimmt', 'Es ist begrenzt auf 10 %'], answer: 0, explanation: 'Der Leerverkäufer muss zurückkaufen – und der Kurs hat nach oben keine Grenze.' },
-    { id: 'm14-q5', type: 'mc', lesson: 1, question: 'Was unterscheidet eine Option von einem Future?', options: ['Optionen sind ein Recht, Futures eine Pflicht', 'Futures sind immer risikolos', 'Optionen gibt es nur auf Rohstoffe', 'Kein Unterschied'], answer: 0, explanation: 'Der Optionskäufer hat ein Recht, beim Future sind beide Seiten verpflichtet.' },
-    { id: 'm14-q6', type: 'calc', lesson: 1, question: 'Call mit Basispreis 80 €, Prämie 4 €. Bei Fälligkeit steht die Aktie bei 82 €. Wie hoch ist der Gewinn/Verlust je Option?', options: ['+2 €', '−2 €', '+6 €', '−4 €'], answer: 1, explanation: 'Wert 2 € − Prämie 4 € = −2 €.' },
-    { id: 'm14-q7', type: 'case', lesson: 1, question: 'Eine stark leerverkaufte Aktie steigt an einem Tag um 60 %, Foren rufen zum Kauf auf. Was passiert wahrscheinlich?', options: ['Ein Short Squeeze – mit hohem Risiko für späte Käufer', 'Eine sichere Gewinnchance', 'Eine Dividendenzahlung', 'Ein Börsengang'], answer: 0, explanation: 'Short Squeezes sind kurzlebig; späte Käufer erleiden oft hohe Verluste.' },
-    { id: 'm14-q8', type: 'mc', lesson: 1, question: 'Was ist ein Margin Call?', options: ['Ein Anruf des Kundenservice', 'Die Aufforderung, zusätzliche Sicherheiten zu hinterlegen', 'Eine Dividendenankündigung', 'Ein Kaufsignal'], answer: 1, explanation: 'Sinkt die hinterlegte Sicherheit unter eine Grenze, muss nachgeschossen werden.' },
-    { id: 'm14-q9', type: 'mc', lesson: 2, question: 'Was misst der VIX?', options: ['Die Dividendenrendite des S&P 500', 'Die vom Markt erwartete Schwankung des S&P 500', 'Die Inflation in den USA', 'Den Umsatz der Börse'], answer: 1, explanation: 'Der VIX wird aus Optionspreisen abgeleitet und misst die erwartete Volatilität.' },
-    { id: 'm14-q10', type: 'calc', lesson: 2, question: 'Ein Index fällt von 10.000 auf 7.600 Punkte. Wie wird diese Phase meist bezeichnet?', options: ['Normale Schwankung', 'Korrektur', 'Bärenmarkt', 'Bullenmarkt'], answer: 2, explanation: '−24 % – mehr als 20 % unter dem Hoch gilt häufig als Bärenmarkt.' },
-    { id: 'm14-q11', type: 'tf', lesson: 2, question: 'Crashs lassen sich mit ausreichend Erfahrung zuverlässig vorhersagen.', answer: 1, explanation: 'Falsch. Zeitpunkt und Ausmaß von Crashs sind nicht zuverlässig vorhersagbar. Vorbereitung ist wichtiger.' },
-  ],
+  quiz: QUIZ_M14,
   sources: [
     { label: 'BaFin – Marktmissbrauch und Insiderrecht', url: 'https://www.bafin.de/DE/Aufsicht/BoersenMaerkte/boersenmaerkte_node.html' },
     { label: 'BaFin – Leerverkäufe (Netto-Leerverkaufspositionen)', url: 'https://www.bafin.de' },

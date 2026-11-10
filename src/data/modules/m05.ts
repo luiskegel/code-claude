@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M05 } from '../quizzes/hard1';
 
 export const m05: Module = {
   id: 'm05',
@@ -301,20 +302,7 @@ export const m05: Module = {
       },
     },
   ],
-  quiz: [
-    { id: 'm05-q1', type: 'calc', lesson: 0, question: 'Kurs 60 €, Gewinn je Aktie 4 €. Wie hoch ist das KGV?', options: ['6', '15', '24', '240'], answer: 1, explanation: 'KGV = 60 / 4 = 15.' },
-    { id: 'm05-q2', type: 'calc', lesson: 0, question: '500 Mio. Aktien, Kurs 20 €. Wie hoch ist die Marktkapitalisierung?', options: ['1 Mrd. €', '10 Mrd. €', '25 Mrd. €', '100 Mrd. €'], answer: 1, explanation: '500 Mio. × 20 € = 10 Mrd. €.' },
-    { id: 'm05-q3', type: 'mc', lesson: 0, question: 'Für welche Branche ist das KBV besonders aussagekräftig?', options: ['Software', 'Banken und Versicherungen', 'Social-Media-Plattformen', 'Biotech ohne Umsatz'], answer: 1, explanation: 'Bei Banken und Versicherungen besteht das Geschäft überwiegend aus bilanzierten Vermögenswerten. Bei Software fehlen die wichtigsten Werte oft in der Bilanz.' },
-    { id: 'm05-q4', type: 'case', lesson: 0, question: 'Ein Unternehmen macht Verluste. Welche Bewertungskennzahl ist am ehesten anwendbar?', options: ['KGV', 'KUV', 'Dividendenrendite', 'PEG'], answer: 1, explanation: 'Bei Verlusten ist das KGV negativ und nicht sinnvoll. Das KUV bezieht sich auf den Umsatz.' },
-    { id: 'm05-q5', type: 'tf', lesson: 0, question: 'Wenn ein Unternehmen eigene Aktien zurückkauft, kann der Gewinn je Aktie steigen, obwohl der Gesamtgewinn gleich bleibt.', answer: 0, explanation: 'Richtig. Weniger Aktien bei gleichem Gewinn erhöhen den EPS.' },
-    { id: 'm05-q6', type: 'calc', lesson: 1, question: 'Nettogewinn 50 Mio. €, Eigenkapital 400 Mio. €. Wie hoch ist die Eigenkapitalrendite?', options: ['8 %', '12,5 %', '20 %', '50 %'], answer: 1, explanation: '50 / 400 = 12,5 %.' },
-    { id: 'm05-q7', type: 'calc', lesson: 1, question: 'Dividende 1,50 €, Kurs 50 €. Wie hoch ist die Dividendenrendite?', options: ['1,5 %', '3 %', '5 %', '33 %'], answer: 1, explanation: '1,50 / 50 = 3 %.' },
-    { id: 'm05-q8', type: 'mc', lesson: 1, question: 'Was unterscheidet EBITDA von EBIT?', options: ['EBITDA enthält zusätzlich die Steuern', 'EBITDA wird vor Abschreibungen berechnet', 'EBITDA ist immer kleiner als EBIT', 'Es gibt keinen Unterschied'], answer: 1, explanation: 'EBITDA = EBIT + Abschreibungen. Es ist daher meist größer.' },
-    { id: 'm05-q9', type: 'case', lesson: 1, question: 'Eine Aktie hat 11 % Dividendenrendite, weil der Kurs halbiert wurde. Wie solltest du das einordnen?', options: ['Als sicheres Einkommen', 'Als mögliches Warnsignal für eine Dividendenkürzung', 'Als garantierten Gewinn', 'Als Zeichen für Wachstum'], answer: 1, explanation: 'Sehr hohe Dividendenrenditen entstehen oft durch fallende Kurse, weil der Markt eine Kürzung erwartet.' },
-    { id: 'm05-q10', type: 'calc', lesson: 1, question: 'Operativer Cashflow 300 Mio. €, Investitionen 120 Mio. €. Wie hoch ist der Free Cashflow?', options: ['420 Mio. €', '180 Mio. €', '120 Mio. €', '2,5'], answer: 1, explanation: '300 − 120 = 180 Mio. €.' },
-    { id: 'm05-q11', type: 'mc', lesson: 2, question: 'Womit solltest du das KGV eines Unternehmens vergleichen?', options: ['Mit dem KGV eines Unternehmens aus einer völlig anderen Branche', 'Mit Wettbewerbern derselben Branche und der eigenen Historie', 'Mit dem Leitzins', 'Mit dem Aktienkurs'], answer: 1, explanation: 'Branchen haben sehr unterschiedliche typische Bewertungen. Vergleiche innerhalb der Peer Group und über die Zeit.' },
-    { id: 'm05-q12', type: 'tf', lesson: 2, question: 'Ein niedriges KGV allein ist ein ausreichender Grund, eine Aktie zu kaufen.', answer: 1, explanation: 'Falsch. Niedrige Bewertungen können berechtigt sein (sinkende Gewinne, hohe Schulden, Strukturwandel).' },
-  ],
+  quiz: QUIZ_M05,
   sources: [
     { label: 'Börse Frankfurt – Kennzahlen-Lexikon', url: 'https://www.boerse-frankfurt.de/wissen' },
     { label: 'Deutsches Aktieninstitut', url: 'https://www.dai.de' },

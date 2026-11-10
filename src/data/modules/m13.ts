@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M13 } from '../quizzes/hard2';
 
 export const m13: Module = {
   id: 'm13',
@@ -243,19 +244,7 @@ export const m13: Module = {
       widget: 'analysis-checklist',
     },
   ],
-  quiz: [
-    { id: 'm13-q1', type: 'mc', lesson: 0, question: 'Womit sollte eine Unternehmensanalyse beginnen?', options: ['Mit dem Chart der letzten Woche', 'Mit dem Verständnis des Geschäftsmodells', 'Mit dem Tipp aus einer Chatgruppe', 'Mit dem Kauf der Aktie'], answer: 1, explanation: 'Zuerst muss man verstehen, wie das Unternehmen Geld verdient.' },
-    { id: 'm13-q2', type: 'calc', lesson: 0, question: 'Umsatz steigt in 3 Jahren von 100 auf 133,1 Mio. €. Wie hoch ist die CAGR?', options: ['10 %', '11 %', '33 %', '7 %'], answer: 0, explanation: '1,331^(1/3) = 1,1 → 10 % pro Jahr.' },
-    { id: 'm13-q3', type: 'mc', lesson: 0, question: 'Was gehört NICHT zu Porters fünf Wettbewerbskräften?', options: ['Bedrohung durch Ersatzprodukte', 'Verhandlungsmacht der Kunden', 'Höhe der Dividende', 'Rivalität unter Wettbewerbern'], answer: 2, explanation: 'Die Dividende ist eine Finanzentscheidung, keine Wettbewerbskraft.' },
-    { id: 'm13-q4', type: 'tf', lesson: 0, question: 'Umsatzwachstum durch Übernahmen ist dasselbe wie organisches Wachstum.', answer: 1, explanation: 'Falsch. Organisches Wachstum entsteht aus eigener Kraft, zugekauftes Wachstum durch Übernahmen.' },
-    { id: 'm13-q5', type: 'calc', lesson: 1, question: 'Free Cashflow 180 Mio. €, Nettogewinn 200 Mio. €. Wie hoch ist die Cash Conversion?', options: ['90 %', '111 %', '20 %', '180 %'], answer: 0, explanation: '180 / 200 = 90 %.' },
-    { id: 'm13-q6', type: 'mc', lesson: 1, question: 'Warum sind Schuldenfälligkeiten wichtig?', options: ['Sie bestimmen die Dividende', 'Fällige Schulden müssen refinanziert werden – womöglich zu höheren Zinsen', 'Sie sind unwichtig', 'Sie erhöhen automatisch den Umsatz'], answer: 1, explanation: 'Große Fälligkeiten in Phasen hoher Zinsen können die Finanzierungskosten stark erhöhen.' },
-    { id: 'm13-q7', type: 'case', lesson: 1, question: 'Unternehmen A hat ein höheres KGV als seine Wettbewerber, aber auch höhere Margen, mehr Wachstum und weniger Schulden. Wie ist das einzuordnen?', options: ['A ist automatisch überbewertet', 'Die höhere Bewertung kann durch die höhere Qualität gerechtfertigt sein', 'A muss verkauft werden', 'Kennzahlen sind irrelevant'], answer: 1, explanation: 'Qualität und Wachstum können eine höhere Bewertung rechtfertigen – ob sie es tun, hängt vom Ausmaß ab.' },
-    { id: 'm13-q8', type: 'calc', lesson: 2, question: 'Erwarteter EPS 4 €, angemessenes KGV 15, Kurs 48 €. Wie hoch ist die Sicherheitsmarge?', options: ['10 %', '20 %', '25 %', '0 %'], answer: 1, explanation: 'Fairer Wert 60 €. (60 − 48) / 60 = 20 %.' },
-    { id: 'm13-q9', type: 'mc', lesson: 2, question: 'Was ist eine Schwäche von DCF-Modellen?', options: ['Sie sind immer exakt', 'Sie reagieren sehr empfindlich auf Annahmen', 'Sie ignorieren Cashflows', 'Sie gelten nur für Banken'], answer: 1, explanation: 'Kleine Änderungen bei Wachstum oder Abzinsungssatz verändern das Ergebnis stark.' },
-    { id: 'm13-q10', type: 'mc', lesson: 2, question: 'Was gehört unbedingt in eine Investmentthese?', options: ['Ein Kursziel für morgen', 'Kriterien, wann die These falsch wäre', 'Die Meinung eines Influencers', 'Nichts – Bauchgefühl reicht'], answer: 1, explanation: 'Ausstiegs- bzw. Überprüfungskriterien machen die These überprüfbar.' },
-    { id: 'm13-q11', type: 'tf', lesson: 2, question: 'Ein hervorragendes Unternehmen ist zu jedem Preis eine gute Investition.', answer: 1, explanation: 'Falsch. Auch das beste Unternehmen kann zu teuer sein (Bewertungsrisiko).' },
-  ],
+  quiz: QUIZ_M13,
   sources: [
     { label: 'Unternehmensregister – Jahresfinanzberichte', url: 'https://www.unternehmensregister.de' },
     { label: 'BaFin – Ad-hoc-Publizität und Insiderrecht', url: 'https://www.bafin.de/DE/Aufsicht/BoersenMaerkte/boersenmaerkte_node.html' },

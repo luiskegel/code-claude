@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M15 } from '../quizzes/hard2';
 
 export const m15: Module = {
   id: 'm15',
@@ -230,19 +231,7 @@ export const m15: Module = {
       widget: 'investment-plan',
     },
   ],
-  quiz: [
-    { id: 'm15-q1', type: 'mc', lesson: 0, question: 'Was sollte vor dem ersten Investment vorhanden sein?', options: ['Ein Hebelprodukt', 'Ein Notgroschen', 'Ein Kredit', 'Eine Kryptowährung'], answer: 1, explanation: 'Der Notgroschen verhindert Notverkäufe in Krisen.' },
-    { id: 'm15-q2', type: 'calc', lesson: 0, question: 'Deine Monatsausgaben betragen 1.800 €. Wie hoch ist ein Notgroschen von 3 Monatsausgaben?', options: ['1.800 €', '3.600 €', '5.400 €', '10.800 €'], answer: 2, explanation: '3 × 1.800 € = 5.400 €.' },
-    { id: 'm15-q3', type: 'case', lesson: 0, question: 'Du möchtest in 2 Jahren 10.000 € für ein Auto haben. Wo ist das Geld nach den Grundsätzen dieses Moduls am besten aufgehoben?', options: ['Einzelaktien', 'Tagesgeld oder Festgeld', 'Hebelprodukte', 'Penny Stocks'], answer: 1, explanation: 'Bei kurzem Horizont ist Sicherheit wichtiger als Rendite.' },
-    { id: 'm15-q4', type: 'tf', lesson: 0, question: 'Teure Dispo- oder Ratenkredite sollten in der Regel vor dem Investieren abgebaut werden.', answer: 0, explanation: 'Richtig. Ihre Zinsen sind meist höher als die erwartete Aktienrendite.' },
-    { id: 'm15-q5', type: 'calc', lesson: 1, question: 'Depot: 50 % Aktien, 50 % Tagesgeld. Der Aktienteil fällt um 40 %. Wie stark fällt das Gesamtdepot?', options: ['−40 %', '−20 %', '−10 %', '−50 %'], answer: 1, explanation: '0,5 × (−40 %) = −20 %.' },
-    { id: 'm15-q6', type: 'mc', lesson: 1, question: 'Welche Anlageklasse ist in der EU bis 100.000 € pro Kunde und Bank gesetzlich gesichert?', options: ['Aktien', 'Bankeinlagen wie Tagesgeld', 'Kryptowährungen', 'Optionsscheine'], answer: 1, explanation: 'Die gesetzliche Einlagensicherung schützt Bankeinlagen bis 100.000 €.' },
-    { id: 'm15-q7', type: 'mc', lesson: 1, question: 'Welche Entscheidung beeinflusst das Anlageergebnis laut diesem Modul besonders stark?', options: ['Die Farbe der Broker-App', 'Die Aufteilung auf Anlageklassen', 'Der Wochentag des Kaufs', 'Die Uhrzeit des Logins'], answer: 1, explanation: 'Die Asset Allocation bestimmt Risiko und Rendite maßgeblich.' },
-    { id: 'm15-q8', type: 'mc', lesson: 2, question: 'Wie oft sollte ein langfristiger Investmentplan grundsätzlich überprüft werden?', options: ['Täglich', 'Etwa einmal im Jahr und bei Lebensereignissen', 'Nie', 'Bei jeder Schlagzeile'], answer: 1, explanation: 'Ein jährlicher Check plus Anlass-Überprüfungen reichen aus.' },
-    { id: 'm15-q9', type: 'tf', lesson: 2, question: 'Diese Akademie gibt dir individuelle Kaufempfehlungen für Aktien.', answer: 1, explanation: 'Falsch. Die Akademie ist eine Lernplattform und keine Anlageberatung.' },
-    { id: 'm15-q10', type: 'case', lesson: 2, question: 'Du planst in 3 Jahren einen Wohnungskauf. Wie sollte sich dein Plan verändern?', options: ['Gar nicht', 'Den benötigten Betrag schrittweise in sichere Anlagen umschichten', 'Mehr Hebelprodukte kaufen', 'Alles in eine Einzelaktie investieren'], answer: 1, explanation: 'Geld mit kurzem Horizont sollte vor Kursrückgängen geschützt werden.' },
-    { id: 'm15-q11', type: 'mc', lesson: 2, question: 'Was zeichnet eine Honorarberatung aus?', options: ['Sie ist immer kostenlos', 'Der Berater wird vom Kunden bezahlt statt über Provisionen', 'Sie verkauft nur Versicherungen', 'Sie ist verboten'], answer: 1, explanation: 'Honorarberater sind unabhängiger, weil sie nicht an Produktprovisionen verdienen.' },
-  ],
+  quiz: QUIZ_M15,
   sources: [
     { label: 'Verbraucherzentrale – Geldanlage und Altersvorsorge', url: 'https://www.verbraucherzentrale.de/geld-versicherungen' },
     { label: 'BaFin – Geldanlage: Tipps für Verbraucher', url: 'https://www.bafin.de/DE/Verbraucher/verbraucher_node.html' },

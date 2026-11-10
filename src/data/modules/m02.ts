@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M02 } from '../quizzes/hard1';
 
 export const m02: Module = {
   id: 'm02',
@@ -254,19 +255,7 @@ export const m02: Module = {
       },
     },
   ],
-  quiz: [
-    { id: 'm02-q1', type: 'mc', lesson: 0, question: 'Welches Recht hast du als Inhaber einer Stammaktie?', options: ['Recht auf feste Verzinsung', 'Stimmrecht auf der Hauptversammlung', 'Recht auf Rückzahlung des Kaufpreises', 'Recht auf einen Platz im Aufsichtsrat'], answer: 1, explanation: 'Stammaktien gewähren Stimmrecht. Feste Zinsen oder Rückzahlung gibt es bei Anleihen, nicht bei Aktien.' },
-    { id: 'm02-q2', type: 'tf', lesson: 0, question: 'Geht dein Broker pleite, sind die Aktien in deinem Depot als Sondervermögen geschützt.', answer: 0, explanation: 'Richtig. Wertpapiere im Depot gehören dir und fallen nicht in die Insolvenzmasse des Brokers.' },
-    { id: 'm02-q3', type: 'mc', lesson: 0, question: 'Was ist bei normalen Aktien der maximale Verlust?', options: ['Das Doppelte des Einsatzes', 'Unbegrenzt', 'Der eingesetzte Betrag (Totalverlust)', '10 % des Einsatzes'], answer: 2, explanation: 'Als Aktionär haftest du nur mit deinem Einsatz. Im schlimmsten Fall wird die Aktie wertlos.' },
-    { id: 'm02-q4', type: 'calc', lesson: 1, question: 'Du kaufst 10 Aktien zu 80 € und verkaufst sie zu 92 €. Gebühren: je 1 €. Wie hoch ist dein Gewinn?', options: ['120 €', '118 €', '122 €', '100 €'], answer: 1, explanation: '(92 − 80) × 10 = 120 € minus 2 € Gebühren = 118 €.' },
-    { id: 'm02-q5', type: 'calc', lesson: 1, question: 'Eine Aktie fällt um 50 %. Um wie viel Prozent muss sie steigen, um den Verlust auszugleichen?', options: ['50 %', '75 %', '100 %', '150 %'], answer: 2, explanation: 'Von 50 € auf 100 € sind es +50 €, bezogen auf 50 € also +100 %.' },
-    { id: 'm02-q6', type: 'tf', lesson: 1, question: 'Ein Buchverlust ist bedeutungslos, solange man die Aktie nicht verkauft.', answer: 1, explanation: 'Falsch. Auch ein unrealisierter Verlust bedeutet, dass dein Vermögen aktuell weniger wert ist. Es gibt keine Garantie auf Erholung.' },
-    { id: 'm02-q7', type: 'mc', lesson: 1, question: 'Was gehört zur Gesamtrendite einer Aktie?', options: ['Nur die Kursveränderung', 'Nur die Dividende', 'Kursveränderung plus Dividenden abzüglich Kosten', 'Der höchste Kurs des Jahres'], answer: 2, explanation: 'Die Gesamtrendite (Total Return) berücksichtigt alle Erträge und Kosten.' },
-    { id: 'm02-q8', type: 'mc', lesson: 2, question: 'Was ist typisch für Vorzugsaktien?', options: ['Doppeltes Stimmrecht', 'Kein Stimmrecht, dafür Dividendenvorteil', 'Garantierte Kurssteigerung', 'Nur für institutionelle Anleger'], answer: 1, explanation: 'Vorzugsaktien verzichten meist auf das Stimmrecht und bieten dafür eine bevorzugte oder höhere Dividende.' },
-    { id: 'm02-q9', type: 'case', lesson: 2, question: 'Ein Freund sagt: „Die Aktie kostet nur 0,30 €, da kann man kaum etwas verlieren und sie kann leicht auf 1 € steigen.“ Was ist richtig?', options: ['Er hat recht, billige Aktien steigen leichter', 'Der Kurs allein sagt nichts über die Bewertung aus; Penny Stocks sind besonders riskant', 'Penny Stocks sind staatlich garantiert', 'Man kann bei Penny Stocks nur Cent-Beträge verlieren'], answer: 1, explanation: 'Entscheidend ist der Unternehmenswert, nicht der Stückpreis. Penny Stocks haben oft hohe Schwankungen, geringe Liquidität und ein hohes Totalverlustrisiko.' },
-    { id: 'm02-q10', type: 'mc', lesson: 2, question: 'Warum zahlen Wachstumsunternehmen oft keine oder nur geringe Dividenden?', options: ['Weil es ihnen verboten ist', 'Weil sie Gewinne lieber in weiteres Wachstum investieren', 'Weil sie keine Aktionäre haben', 'Weil Dividenden nur in den USA erlaubt sind'], answer: 1, explanation: 'Wachstumsunternehmen reinvestieren Gewinne, z. B. in Forschung oder Expansion, um künftig noch mehr zu verdienen.' },
-    { id: 'm02-q11', type: 'mc', lesson: 2, question: 'Was ist eine Value-Falle?', options: ['Eine günstig wirkende Aktie, deren Geschäft dauerhaft schrumpft', 'Ein Börsenbetrug', 'Eine Aktie mit hohem KGV', 'Ein Handelsfehler des Brokers'], answer: 0, explanation: 'Eine Aktie kann billig aussehen, weil ihr Geschäftsmodell schwächer wird. Dann bleibt sie oft billig oder fällt weiter.' },
-  ],
+  quiz: QUIZ_M02,
   sources: [
     { label: 'BaFin – Aktien: Grundlagen für Verbraucher', url: 'https://www.bafin.de/DE/Verbraucher/GeldanlageWertpapiere/geldanlagewertpapiere_node.html' },
     { label: 'Deutsches Aktieninstitut – Aktienwissen', url: 'https://www.dai.de' },

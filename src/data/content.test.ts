@@ -32,6 +32,8 @@ describe('Lerninhalte', () => {
         expect(q.answer, q.id).toBeGreaterThanOrEqual(0);
         expect(q.answer, q.id).toBeLessThan(opts.length);
         expect(q.lesson, q.id).toBeLessThan(m.lessons.length);
+        if (q.type !== 'tf') expect(opts.length, q.id).toBe(4);
+        expect(new Set(opts).size, q.id).toBe(opts.length);
       });
       // jede Lektion hat mindestens eine Frage für den Kurztest
       m.lessons.forEach((_, i) => expect(m.quiz.some((q) => q.lesson === i), `${m.id} Lektion ${i}`).toBe(true));

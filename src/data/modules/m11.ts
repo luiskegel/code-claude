@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M11 } from '../quizzes/hard2';
 
 export const m11: Module = {
   id: 'm11',
@@ -246,19 +247,7 @@ export const m11: Module = {
       },
     },
   ],
-  quiz: [
-    { id: 'm11-q1', type: 'mc', lesson: 0, question: 'Was bedeutet FOMO?', options: ['Freude am Markt', 'Angst, eine Chance zu verpassen', 'Ein Ordertyp', 'Eine Kennzahl'], answer: 1, explanation: 'FOMO = Fear of Missing Out.' },
-    { id: 'm11-q2', type: 'case', lesson: 0, question: 'Dein ETF-Depot fällt in einer Krise um 30 %. Du brauchst das Geld in den nächsten 15 Jahren nicht. Was ist laut diesem Modul meist die durchdachteste Reaktion?', options: ['Sofort alles verkaufen', 'Plan prüfen; wenn sich die persönliche Lage nicht geändert hat, weiter investieren', 'Einen Kredit aufnehmen und alles in eine Aktie stecken', 'Auf Hebelprodukte umsteigen'], answer: 1, explanation: 'Panikverkäufe realisieren Verluste. Ein langfristiger Plan berücksichtigt solche Rückgänge.' },
-    { id: 'm11-q3', type: 'tf', lesson: 0, question: 'Euphorie unter Anlegern ist oft ein Zeichen für besonders niedriges Risiko.', answer: 1, explanation: 'Falsch. Euphorie tritt oft auf, wenn die Bewertungen hoch sind – also wenn das Risiko besonders groß ist.' },
-    { id: 'm11-q4', type: 'mc', lesson: 1, question: 'Was beschreibt die Verlustaversion?', options: ['Verluste schmerzen stärker, als gleich große Gewinne freuen', 'Man vermeidet jedes Investment', 'Verluste sind steuerfrei', 'Man verkauft Verlierer sofort'], answer: 0, explanation: 'Nach Kahneman und Tversky wiegen Verluste psychologisch etwa doppelt so schwer.' },
-    { id: 'm11-q5', type: 'case', lesson: 1, question: 'Du verkaufst deinen Gewinner und behältst deinen Verlierer, ohne beide Unternehmen zu prüfen. Welcher Effekt liegt vor?', options: ['Cost-Average-Effekt', 'Dispositionseffekt', 'Zinseszinseffekt', 'Momentum-Effekt'], answer: 1, explanation: 'Der Dispositionseffekt beschreibt genau dieses Verhalten.' },
-    { id: 'm11-q6', type: 'mc', lesson: 1, question: 'Wie wirkt man dem Confirmation Bias am besten entgegen?', options: ['Nur positive Artikel lesen', 'Aktiv nach Gegenargumenten suchen', 'Öfter handeln', 'Den Kaufkurs ignorieren'], answer: 1, explanation: 'Die Frage „Was müsste passieren, damit ich falsch liege?“ hilft gegen den Bestätigungsfehler.' },
-    { id: 'm11-q7', type: 'case', lesson: 1, question: '„Die Aktie stand mal bei 200 €, jetzt bei 60 € – sie ist ein Schnäppchen.“ Welcher Denkfehler liegt vor?', options: ['Ankereffekt', 'Diversifikation', 'Rebalancing', 'Zinseszins'], answer: 0, explanation: 'Der alte Kurs dient als Anker – sagt aber nichts über den heutigen Wert aus.' },
-    { id: 'm11-q8', type: 'tf', lesson: 1, question: 'Studien zeigen, dass Privatanleger, die sehr häufig handeln, im Durchschnitt bessere Ergebnisse erzielen.', answer: 1, explanation: 'Falsch. Häufiges Handeln geht im Schnitt mit schlechteren Ergebnissen einher (Kosten, Steuern, Timing).' },
-    { id: 'm11-q9', type: 'mc', lesson: 2, question: 'Welches Werkzeug hilft am meisten, in Krisen nicht emotional zu handeln?', options: ['Ein vorher aufgeschriebener Investmentplan', 'Mehr Nachrichten lesen', 'Häufiger ins Depot schauen', 'Ein Hebelprodukt'], answer: 0, explanation: 'Ein schriftlicher Plan, in ruhigen Zeiten erstellt, gibt in Krisen Orientierung.' },
-    { id: 'm11-q10', type: 'calc', lesson: 2, question: 'Zielaufteilung 50/50 (Aktien/Tagesgeld). Aktuell 12.000 € Aktien und 8.000 € Tagesgeld. Wie viel muss umgeschichtet werden?', options: ['1.000 €', '2.000 €', '4.000 €', '0 €'], answer: 1, explanation: 'Gesamt 20.000 €, Ziel je 10.000 € → 2.000 € von Aktien in Tagesgeld.' },
-    { id: 'm11-q11', type: 'mc', lesson: 2, question: 'Was ist der Zweck einer 48-Stunden-Regel?', options: ['Steuern zu sparen', 'Abstand zu spontanen, emotionalen Entscheidungen zu gewinnen', 'Höhere Dividenden zu bekommen', 'Den Broker zu wechseln'], answer: 1, explanation: 'Die Wartezeit gibt Raum für Recherche und dämpft FOMO.' },
-  ],
+  quiz: QUIZ_M11,
   sources: [
     { label: 'BaFin – Finanzbildung und Anlegerschutz', url: 'https://www.bafin.de/DE/Verbraucher/verbraucher_node.html' },
     { label: 'Deutsche Bundesbank – Ökonomische Bildung', url: 'https://www.bundesbank.de/de/service/schule-und-bildung' },

@@ -1,4 +1,5 @@
 import type { Module } from '@/types';
+import { QUIZ_M03 } from '../quizzes/hard1';
 
 export const m03: Module = {
   id: 'm03',
@@ -256,19 +257,7 @@ export const m03: Module = {
       widget: 'order-types',
     },
   ],
-  quiz: [
-    { id: 'm03-q1', type: 'mc', lesson: 0, question: 'Wofür ist das Verrechnungskonto da?', options: ['Zur Verwahrung der Aktien', 'Zur Abrechnung von Käufen, Verkäufen und Dividenden', 'Für Kreditkartenzahlungen', 'Zur Steuererklärung'], answer: 1, explanation: 'Das Verrechnungskonto ist das Geldkonto zum Depot. Die Aktien selbst liegen im Depot.' },
-    { id: 'm03-q2', type: 'tf', lesson: 0, question: 'Privatanleger können ohne Broker direkt an der Börse handeln.', answer: 1, explanation: 'Falsch. Privatanleger benötigen einen zugelassenen Vermittler (Broker/Bank).' },
-    { id: 'm03-q3', type: 'mc', lesson: 0, question: 'Welches Kriterium ist bei der Brokerwahl besonders wichtig?', options: ['Die Farbe der App', 'Regulierung durch eine anerkannte Finanzaufsicht', 'Werbung durch Influencer', 'Möglichst viele Push-Nachrichten'], answer: 1, explanation: 'Ein Broker sollte von der BaFin oder einer anderen EU-Aufsicht reguliert sein.' },
-    { id: 'm03-q4', type: 'calc', lesson: 1, question: 'Geldkurs 9,80 €, Briefkurs 10,00 €. Wie hoch ist der Spread in Prozent (bezogen auf den Briefkurs)?', options: ['0,2 %', '2 %', '20 %', '0,02 %'], answer: 1, explanation: '(10,00 − 9,80) / 10,00 = 0,02 = 2 %.' },
-    { id: 'm03-q5', type: 'mc', lesson: 1, question: 'Wann sind Spreads typischerweise am kleinsten?', options: ['Nachts um 3 Uhr', 'Während der Haupthandelszeit der Heimatbörse', 'An Feiertagen', 'Direkt nach Börsenschluss'], answer: 1, explanation: 'Während der Kernhandelszeit ist das Handelsvolumen am höchsten und der Spread meist am niedrigsten.' },
-    { id: 'm03-q6', type: 'calc', lesson: 1, question: 'Du kaufst für 100 € Aktien bei 5 € Ordergebühr. Wie viel Prozent macht die Gebühr aus?', options: ['0,5 %', '5 %', '50 %', '1 %'], answer: 1, explanation: '5 € / 100 € = 5 %. Bei kleinen Beträgen fallen Fixgebühren stark ins Gewicht.' },
-    { id: 'm03-q7', type: 'mc', lesson: 2, question: 'Was garantiert eine Limit Order?', options: ['Die sofortige Ausführung', 'Dass der festgelegte Preis nicht überschritten (Kauf) bzw. unterschritten (Verkauf) wird', 'Einen Gewinn', 'Die Ausführung zum Schlusskurs'], answer: 1, explanation: 'Das Limit garantiert den Preis, nicht die Ausführung.' },
-    { id: 'm03-q8', type: 'case', lesson: 2, question: 'Dein Stop-Loss liegt bei 45 €. Nach schlechten Nachrichten eröffnet die Aktie bei 39 €. Was passiert?', options: ['Verkauf zu genau 45 €', 'Die Order wird ausgelöst und etwa zu 39 € ausgeführt', 'Nichts, weil 45 € nie gehandelt wurde', 'Der Broker erstattet die Differenz'], answer: 1, explanation: 'Der Stop wird ausgelöst und als Market Order zum nächsten verfügbaren Kurs ausgeführt – bei einer Kurslücke deutlich unter dem Stoppkurs.' },
-    { id: 'm03-q9', type: 'mc', lesson: 2, question: 'Welche Order empfiehlt sich bei einem wenig gehandelten Nebenwert?', options: ['Market Order', 'Limit Order', 'Gar keine Order', 'Stop-Buy ohne Limit'], answer: 1, explanation: 'Bei geringer Liquidität schützt ein Limit vor einer Ausführung zu einem ungünstigen Preis.' },
-    { id: 'm03-q10', type: 'tf', lesson: 2, question: 'Ein Trailing Stop zieht den Stoppkurs bei steigenden Kursen automatisch nach oben nach.', answer: 0, explanation: 'Richtig. Er folgt dem Kurs in einem festen Abstand nach oben, aber nicht nach unten.' },
-    { id: 'm03-q11', type: 'calc', lesson: 2, question: 'Kurs 100 €. Kauf-Limit 96 €. Tagestief 97 €, Tageshoch 103 €. Wird die Order ausgeführt?', options: ['Ja, zu 97 €', 'Ja, zu 96 €', 'Nein', 'Ja, zu 100 €'], answer: 2, explanation: 'Der Kurs muss 96 € oder weniger erreichen. Mit einem Tief von 97 € wird das Kauf-Limit nicht ausgeführt.' },
-  ],
+  quiz: QUIZ_M03,
   sources: [
     { label: 'BaFin – Unternehmensdatenbank (Zulassung prüfen)', url: 'https://portal.mvp.bafin.de/database/InstInfo/' },
     { label: 'Börse Frankfurt – Ordertypen', url: 'https://www.boerse-frankfurt.de/wissen' },
